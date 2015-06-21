@@ -1,0 +1,75 @@
+@import "foundation/foundation";
+@import "utils";
+
+.page-container{
+  padding: 10px;
+}
+
+.main-menu{
+  @include equalwidth;
+  .menu-item{
+	cursor: pointer;
+	&.disabled{
+	  cursor: not-allowed;
+	}
+	border: solid #000000 1px;
+	padding: 2px 10px;
+	text-align: center;
+  }
+}
+
+.disabled{
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.card{
+  height: 8em;
+  border: 1px solid black;
+  border-radius: 3px;
+  width: 5em;
+  text-align: center;
+  vertical-align: middle;
+  display: table-cell;
+}
+.meeting-board{
+  @include clearfix;
+  margin-top: 10px;
+  .player{
+    display: inline-block;
+    margin: 0 5px;
+  }
+  h5{
+    margin-top: 0;
+    text-align: center;
+  }
+  &.hide-cards{
+    .player{
+      &.has-bid{
+        .card{
+          background: #008000;
+        }
+      }
+    }
+  }
+}
+
+.bid-board {
+  .possible-bids{
+    list-style-type: none;
+    li{
+      display: inline-block;
+      padding: 5px;
+      cursor: pointer;
+      .card:hover{
+        background-color: orange;
+      }
+      &.chosen{
+
+        .card{
+          background: #008000 ;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "poker",
+  "version": "0.0.0",
+  "description": "ERROR: No README.md file found!",
+  "main": "poker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "GPL",
+  "devDependencies": {
+    "ws": "^0.7.2"
+  },
+  "repository": {
+    "url": ""
+  },
+  "dependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}

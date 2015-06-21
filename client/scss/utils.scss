@@ -1,0 +1,46 @@
+//
+// Equalwidth mixin spreads its children equally wide inside of itself.
+// http://codepen.io/mathias/pen/skJKu
+//
+@mixin equalwidth {
+  @include equalwidth-container;
+  > * {
+	@include equalwidth-item;
+  }
+}
+
+//
+// Same as equalwidth on desktop and tablet but each child 100% wide on mobile
+// http://codepen.io/mathias/pen/skJKu
+//
+@mixin equalwidth-notmobile {
+  @include equalwidth;
+  @include respond-to(phone) {
+	> * {
+	  display: block;
+	  width: 100%;
+	}
+  }
+}
+
+//
+// Equalwidth help mixins. - Used internally by equalwidth
+// http://codepen.io/mathias/pen/skJKu
+//
+@mixin equalwidth-container{
+  width: 100%;
+  display: table;
+  table-layout: fixed; /* This plus width 100% is the magic */
+  padding: 0;
+  margin: 0;
+}
+
+@mixin equalwidth-row {
+  display: table-row;
+}
+
+@mixin equalwidth-item {
+  overflow: hidden;
+  display: table-cell;
+  list-style: none;
+}
