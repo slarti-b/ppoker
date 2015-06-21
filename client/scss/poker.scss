@@ -1,6 +1,17 @@
 @import "foundation/foundation";
 @import "utils";
 
+.ng-cloak{
+  display: none !important;
+}
+
+#app-loading-container {
+  display: none;
+  &.ng-cloak{
+    display: block !important;
+  }
+}
+
 .page-container{
   padding: 10px;
 }

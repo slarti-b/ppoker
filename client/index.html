@@ -6,6 +6,12 @@
 </head>
 <body data-ng-controller="AppController as app">
 
+<div id="app-loading-container" class="ng-cloak">
+	App is loading
+</div>
+
+<div id="app-container" class="ng-cloak">
+	
 	<div data-ng-if="user.logged_in">
 		<nav class="main-menu" data-ng-controller="MenuController as menus">
 			<span class="menu-item" href="#" data-ng-repeat="menu in menus.menu_items" data-ng-click="menus.onclick($event, menu)" data-ng-class="{disabled:menu.disabled}">
@@ -70,6 +76,9 @@
 			</div>
 		</form>
 	</div>
+
+</div>
+
 
 
 

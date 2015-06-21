@@ -2017,6 +2017,14 @@ th.hide-for-touch {
   th.show-for-print {
     display: table-cell !important; } }
 
+.ng-cloak {
+  display: none !important; }
+
+#app-loading-container {
+  display: none; }
+  #app-loading-container.ng-cloak {
+    display: block !important; }
+
 .page-container {
   padding: 10px; }
 
