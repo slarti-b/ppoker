@@ -29,3 +29,6 @@ node_modules
 
 # Project directory
 .idea
+
+# Setingas files
+server/settings.js

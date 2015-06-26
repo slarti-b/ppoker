@@ -10,6 +10,21 @@ var PP_SimpleErrorResponse = PP_Responses.PP_SimpleErrorResponse;
 // Get helpers
 var util = require( 'util' );
 
+function log(message){
+	if( settings.debug ) {
+		console.log(message);
+	}
+}
+
+function log_o(obj, depth){
+	if( settings.debug ){
+		if( !depth ) {
+			depth = null;
+		}
+		console.log( util.inspect( obj, { depth: depth } ) );
+	}
+}
+
 // Get and setup WebSocketServer
 var WebSocketServer = require( 'ws' ).Server;
 var wss = new WebSocketServer( {
