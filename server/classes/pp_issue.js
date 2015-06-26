@@ -3,6 +3,10 @@
 // Get config
 var settings = require( '../settings' ).settings;
 
+// Get helpers
+var PP_Logger = require( '../pp_logger').PP_Logger;
+var logger = new PP_Logger
+
 /**
  * Class defining an issue
  * @param id string The ID of the issue
@@ -26,7 +30,7 @@ PP_Issue.prototype.set_jira_link_from_id = function() {
 		this.link = settings.jira_link_url + this.id;
 	} else {
 		this.link = false;
-		console.log( 'Unable to set jira link for ' + this.id + ' using link url ' + settings.jira_link_url );
+		logger.log( 'Unable to set jira link for ' + this.id + ' using link url ' + settings.jira_link_url );
 	}
 };
 

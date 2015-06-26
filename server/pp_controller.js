@@ -11,8 +11,9 @@ var PP_Exception = PP_Exceptions.PP_Exception;
 var PP_Meeting = require( './classes/pp_meeting').PP_Meeting;
 var PP_Player = require( './classes/pp_player').PP_Player;
 
-var util = require( 'util' );
-
+// Get helpers
+var PP_Logger = require( './pp_logger').PP_Logger;
+var logger = new PP_Logger
 
 function PP_Controller(wss){
 	this._meetings = {};
@@ -24,10 +25,9 @@ PP_Controller.prototype.do_refresh = function(ws, data) {
 
 PP_Controller.prototype.do_create_meeting = function(ws, data){
 	var meeting = new PP_Meeting(ws, data.player_name, data.meeting_name);
-	//console.log( util.inspect( meeting, { depth: null } ) );
-	console.log( util.inspect( this._meetings, { depth: null } ) );
+	logger.log_o( this._meetings );
 	this._meetings[ meeting.get_id() ] = meeting;
-	console.log('meeting added');
+	logger.log('meeting added');
 	meeting.update_all_with_status(true, 'meeting_created');
 	this.broadcast( this._get_meetings_list_response() );
 	return true;
@@ -118,14 +118,14 @@ PP_Controller.prototype.do_leave_meeting = function(ws, data) {
 };
 
 PP_Controller.prototype.do_set_bid = function(ws, data) {
-	console.log('Setting bid');
-	console.log( util.inspect(data,  {depth: null}));
-	console.log('');
+	logger.log('Setting bid');
+	logger.log_o( data );
+	logger.log('');
 	var meeting_id = data.meeting_id;
 	var player_id = data.player_id;
-	console.log(meeting_id + ' / ' + player_id);
+	logger.log(meeting_id + ' / ' + player_id);
 	var meeting = this._get_meeting(meeting_id, 'set_bid');
-	console.log('got meeting');
+	logger.log('got meeting');
 	meeting.set_bid(player_id, data.bid);
 
 	return true;
@@ -149,7 +149,7 @@ PP_Controller.prototype._get_meeting = function(meeting_id, action) {
 };
 
 PP_Controller.prototype.send_message = function(ws, response) {
-	console.log( util.inspect(response, {depth: 3}));
+	logger.log_o( response, 3 );
 	ws.send( JSON.stringify( response ) );
 };
 

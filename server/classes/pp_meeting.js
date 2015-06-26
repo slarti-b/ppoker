@@ -11,7 +11,10 @@ var PP_NotAuthorisedException = PP_Exceptions.PP_NotAuthorisedException;
 var PP_Player = require( './pp_player').PP_Player;
 var PP_Issue = require( './pp_issue' ).PP_Issue;
 
-var util = require( 'util' );
+// Get helpers
+var PP_Logger = require( '../pp_logger').PP_Logger;
+var logger = new PP_Logger
+
 
 /**
  * Class defining a meeting
@@ -73,7 +76,7 @@ PP_Meeting.prototype.leave = function(player_id) {
 };
 
 PP_Meeting.prototype.set_bid = function(player_id, bid) {
-	console.log('setting bid ' + bid + ' for player ' + player_id);
+	logger.log('setting bid ' + bid + ' for player ' + player_id);
 	var player = this._get_player(player_id);
 	player.set_bid(bid);
 	this.update_all_with_status(true, 'player_bid', false);
@@ -165,7 +168,7 @@ PP_Meeting.prototype.bid = function(player_id, bid){
  * @param action string The action to return
  */
 PP_Meeting.prototype.update_all_with_status = function(success, action, notice){
-	console.log('update_all_with_status for ' + action);
+	logger.log('update_all_with_status for ' + action);
 	var resp = this._get_status_update_response();
 	if( notice ) {
 		resp.notice = notice;
@@ -183,8 +186,8 @@ PP_Meeting.prototype.update_all = function(success, action, data){
 	for( var player_id in this._players ) {
 		if( success ) {
 			if( this._host ){
-				console.log(player_id);
-				console.log(this._host);
+				logger.log(player_id);
+				logger.log(this._host);
 				data.you_are_host = (player_id === this._host);
 			}
 			data.your_bid = this._players[ player_id ].get_bid();
@@ -253,8 +256,8 @@ PP_Meeting.prototype._get_player = function(player_id) {
 	if( player_id && this._players[ player_id ] ) {
 		return this._players[ player_id ];
 	} else {
-		console.log('player not found');
-		console.log( util.inspect(this._players, {depth: 3}) );
+		logger.log('player not found');
+		logger.log_o( this._players, 3 );
 		throw new PP_PlayerNotFoundException('Player is not part of this meeting');
 	}
 }
@@ -324,15 +327,15 @@ PP_Meeting.prototype._get_status_update_response = function(){
  */
 PP_Meeting.prototype._update = function(ws, success, action, player_id, data){
 	try{
-		console.log('sending update for ' + player_id);
-		//console.log( util.inspect( data, { depth: null } ) );
+		logger.log('sending update for ' + player_id);
 
 		var message = new PP_SuccessResponse(action, data, player_id, this.get_id());
-		console.log( util.inspect( message, { depth: null } ) );
+		logger.log_o( message );
 		ws.send( JSON.stringify(message) );
 
 	}catch( e ) {
-		console.log( 'EXCEPTON: ' + util.inspect( e ) );
+		logger.log( 'EXCEPTON: ' );
+		logger.log_o( e );
 	}
 };
 
