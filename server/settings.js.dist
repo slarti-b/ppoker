@@ -3,7 +3,7 @@
 module.exports = {
 	settings: {
 		host: '',
-		port: ,
+		port: 0,
 		jira_link_url: '',
 		debug: false
 

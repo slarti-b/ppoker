@@ -32,3 +32,4 @@ node_modules
 
 # Setingas files
 server/settings.js
+client/js/000.options.js

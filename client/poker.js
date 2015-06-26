@@ -1,10 +1,3 @@
-var options = {
-	websocket: {
-		uri: 'ws://pokerdev:8080',
-		enqueue: true
-	}
-};
-
 "use strict";
 
 function log(message){

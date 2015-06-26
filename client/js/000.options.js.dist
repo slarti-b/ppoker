@@ -1,6 +1,6 @@
 var options = {
 	websocket: {
-		uri: 'ws://pokerdev:8080',
+		uri: 'ws://',
 		enqueue: true
 	}
 };
