@@ -29,19 +29,33 @@ module.exports = function(grunt) {
 	},
 
 	concat: {
-		dev: {
+		dev_js: {
 			options: {
 				sourceMap: true
 			},
 			src: ['js/*.js'],
 			dest: '<%= pkg.name %>.js'
 		},
-		dev: {
+		prod_js: {
 			options: {
 				sourceMap: false
 			},
 			src: ['js/*.js'],
 			dest: '<%= pkg.name %>.js'
+		},
+		dev_html: {
+			options: {
+				sourceMap: true
+			},
+			src: ['html/*.htm*'],   // *.htm* so both .html and .htm are used in dev
+			dest: 'index.html'
+		},
+		prod_html: {
+			options: {
+				sourceMap: false
+			},
+			src: ['html/*.html'],   // *.html so only .html is used in prod
+			dest: 'index.html'
 		}
 	},
 
@@ -51,9 +65,13 @@ module.exports = function(grunt) {
 			files: ['<%= pkg.name %>.scss', 'scss/**/*.scss'],
 			tasks: ['sass:dev']
 		},
-		concat: {
+		concat_js: {
 			files: ['js/*.js'],
-			tasks: ['concat:dev']
+			tasks: ['concat:dev_js']
+		},
+		concat_html: {
+			files: ['html/*.htm*'],
+			tasks: ['concat:dev_html']
 		},
 		livereload: {
 			options: {
@@ -70,7 +88,7 @@ grunt.loadNpmTasks('grunt-contrib-watch');
 grunt.loadNpmTasks('grunt-sass');
 grunt.loadNpmTasks('grunt-contrib-concat');
 
-grunt.registerTask('default', ['sass:dev', 'concat:dev', 'watch']);
-grunt.registerTask('prod', ['sass:prod', 'concat:prod']);
+grunt.registerTask('default', ['sass:dev', 'concat:dev_js', 'concat:dev_html', 'watch']);
+grunt.registerTask('prod', ['sass:prod', 'concat:prod_js', 'concat:prod_html']);
 
 };

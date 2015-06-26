@@ -30,9 +30,14 @@ node_modules
 # Project directory
 .idea
 
-# Setings and generated files
+# Setings files
 server/settings.js
 client/js/000.options.js
+
+# Generated files
+client/index.html
 client/poker.js
 client/poker.css
 *.css.map
+*.js.map
+*.html.map
