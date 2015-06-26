@@ -30,6 +30,9 @@ node_modules
 # Project directory
 .idea
 
-# Setingas files
+# Setings and generated files
 server/settings.js
 client/js/000.options.js
+client/poker.js
+client/poker.css
+*.css.map
