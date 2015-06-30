@@ -8,7 +8,7 @@ var PP_Responses = require( './classes/pp_response');
 var PP_SimpleErrorResponse = PP_Responses.PP_SimpleErrorResponse;
 
 // Get helpers
-var PP_Logger = require( './pp_logger').PP_Logger;
+var PP_Logger = require( './helpers/pp_logger').PP_Logger;
 var logger = new PP_Logger
 
 // Get and setup WebSocketServer

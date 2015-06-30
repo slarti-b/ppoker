@@ -12,7 +12,7 @@ var PP_Meeting = require( './classes/pp_meeting').PP_Meeting;
 var PP_Player = require( './classes/pp_player').PP_Player;
 
 // Get helpers
-var PP_Logger = require( './pp_logger').PP_Logger;
+var PP_Logger = require( './helpers/pp_logger').PP_Logger;
 var logger = new PP_Logger
 
 /**
@@ -23,6 +23,7 @@ var logger = new PP_Logger
 function PP_Controller(wss){
 	this._meetings = {};
 	this.all_clients = wss.clients;
+	this._players = {};
 }
 PP_Controller.prototype.do_refresh = function(ws, data) {
 

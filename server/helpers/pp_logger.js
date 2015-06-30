@@ -3,7 +3,7 @@
 var util = require( 'util' );
 
 // Get config
-var settings = require( './settings' ).settings;
+var settings = require( '../settings' ).settings;
 
 /**
  * Logger class

@@ -12,11 +12,13 @@ var PP_Player = require( './pp_player').PP_Player;
 var PP_Issue = require( './pp_issue' ).PP_Issue;
 
 // Get helpers
-var PP_Logger = require( '../pp_logger').PP_Logger;
+var PP_Logger = require( '../helpers/pp_logger').PP_Logger;
 var logger = new PP_Logger
+var PP_Auth = require( '../helpers/pp_auth').PP_Auth;
+var auth = new PP_Auth();
 
 
-/**
+	/**
  * Class defining a meeting
  * @param host_ws websocket The connection for the person hosting the meeting
  * @param host_name string The name of the host
@@ -24,7 +26,7 @@ var logger = new PP_Logger
  * @constructor
  */
 function PP_Meeting(host_ws, host_name, meeting_name) {
-	this._id = this._createGUID();
+	this._id = auth.createGUID();
 	this._name = meeting_name;
 	this._players = {};
 	this.show_cards = false;
@@ -289,7 +291,7 @@ PP_Meeting.prototype._get_players_for_response = function(){
  * @private
  */
 PP_Meeting.prototype._add_player = function(ws, name, player_id) {
-	var id = player_id ? player_id : this._createGUID();
+	var id = player_id ? player_id : auth.createGUID();
 	var player = new PP_Player(ws, id, name);
 	this._players[id]  = player;
 
@@ -353,19 +355,6 @@ PP_Meeting.prototype._new_issue_set = function(){
 	}
 
 	this.update_all_with_status(true, 'new_issue', 'Issue Changed')
-}
-
-/**
- * Generates an rfc4122 version 4 compliant globally unique identifier or guid
- * @returns {string}
- * @private
- */
-PP_Meeting.prototype._createGUID = function() {
-	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace( /[xy]/g, function( c ) {
-		var r = Math.random() * 16 | 0;
-		var v = 'x' === c ? r : (r & 0x3 | 0x8);
-		return v.toString( 16 );
-	} );
 };
 
 

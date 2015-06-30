@@ -4,7 +4,7 @@
 var settings = require( '../settings' ).settings;
 
 // Get helpers
-var PP_Logger = require( '../pp_logger').PP_Logger;
+var PP_Logger = require( '../helpers/pp_logger').PP_Logger;
 var logger = new PP_Logger
 
 /**
