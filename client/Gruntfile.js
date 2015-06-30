@@ -31,7 +31,7 @@ module.exports = function(grunt) {
 	concat: {
 		dev_js: {
 			options: {
-				sourceMap: true
+				sourceMap: false
 			},
 			src: ['js/*.js'],
 			dest: '<%= pkg.name %>.js'
@@ -45,7 +45,7 @@ module.exports = function(grunt) {
 		},
 		dev_html: {
 			options: {
-				sourceMap: true
+				sourceMap: false
 			},
 			src: ['html/*.htm*'],   // *.htm* so both .html and .htm are used in dev
 			dest: 'index.html'
