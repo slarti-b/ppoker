@@ -6,6 +6,9 @@ var settings = require( '../settings' ).settings;
 // Get helpers
 var PP_Logger = require( '../helpers/pp_logger').PP_Logger;
 var logger = new PP_Logger
+var PP_Jira = require( '../helpers/pp_jira').PP_Jira;
+var jira = new PP_Jira();
+
 
 /**
  * Class defining an issue
@@ -26,12 +29,7 @@ function PP_Issue( id, name, description, link ) {
  * Sets the link based on the id and the global setting for the Jira link url
  */
 PP_Issue.prototype.set_jira_link_from_id = function() {
-	if( this.id && settings.jira_link_url ) {
-		this.link = settings.jira_link_url + this.id;
-	} else {
-		this.link = false;
-		logger.log( 'Unable to set jira link for ' + this.id + ' using link url ' + settings.jira_link_url );
-	}
+	this.link = jira.get_jira_link_url(this.id);
 };
 
 /**
