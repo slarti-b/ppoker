@@ -9,7 +9,9 @@ app.controller('MenuController', ['$scope', function($scope){
 		if( $scope.meeting.is_host ){
 			menu.menu_items.show_cards = {
 				text: 'Show Cards',
-				action: 'show_cards',
+				action: function($scope){
+					$scope.do_action('show_cards');
+				},
 				disabled: !$scope.meeting.all_chosen
 			};
 			menu.menu_items.change_issue = {
@@ -32,18 +34,23 @@ app.controller('MenuController', ['$scope', function($scope){
 	};
 
 	menu.update_menu_items($scope);
+
 	$scope.$on('pp_status_updated', function(){
-		//$scope.apply(function(){
+		log_o('$scope', $scope);
+		//$scope.$apply(function(){
 			menu.update_menu_items($scope);
 		//});
 	});
 
 
-	menu.onclick = function($event, $action){
-		if( $action.disabled ){
-			console.log('disabled');
+	menu.onclick = function($event, $menu_item){
+		if( $menu_item.disabled ){
+			log_o('disabled', $menu_item);
 		}else {
-			console.log('action: %o', $action);
+			log_o('action', $menu_item);
+			if( typeof $menu_item.action === 'function' ) {
+				$menu_item.action($scope);
+			}
 		}
 		$event.preventDefault();
 		$event.stopPropagation();

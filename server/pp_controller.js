@@ -26,7 +26,9 @@ function PP_Controller(wss){
 	this._players = {};
 }
 PP_Controller.prototype.do_refresh = function(ws, data) {
-
+	for( var m in this._meetings ){
+		this._meetings[m ].update_all_with_status(true, 'refresh');
+	}
 };
 
 PP_Controller.prototype.do_create_meeting = function(ws, data){
@@ -80,7 +82,7 @@ PP_Controller.prototype.do_show_cards = function(ws, data) {
 	var player_id = data.player_id;
 	var meeting = this._get_meeting(meeting_id, 'show_cards');
 
-	meeting.show_cards(player_id, true);
+	meeting.set_show_cards(player_id, true);
 	return true;
 };
 

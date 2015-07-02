@@ -1,0 +1,16 @@
+<div class="page-container" data-ng-if="!user.logged_in">
+	<form data-ng-controller="LoginController as login" data-ng-submit="login.do_login($rootScope)">
+		<h1>You must log in to play</h1>
+		<div>
+			<label for="dispname">Display Name</label>
+			<input type="text" data-ng-model="dispname" id="dispname" />
+		</div>
+		<div>
+			<input type="checkbox" data-ng-model="use_local" id="use-local" />
+			<label for="use-local">Remember me on this machine</label>
+		</div>
+		<div>
+			<button type="submit">Log in</button>
+		</div>
+	</form>
+</div>

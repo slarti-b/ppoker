@@ -1,73 +1,54 @@
 
-<div id="app-loading-container" class="ng-cloak">
-	<div id="app-loading-message">App is loading</div>
-</div>
 
-<div id="app-container" class="ng-cloak">
 
-	<div data-ng-if="user.logged_in">
-		<nav class="main-menu" data-ng-controller="MenuController as menus">
-			<span class="menu-item" href="#" data-ng-repeat="menu in menus.menu_items" data-ng-click="menus.onclick($event, menu)" data-ng-class="{disabled:menu.disabled}">
-				{{menu.text}}
-			</span>
-		</nav>
-		<p>You are playing as {{user.name}}</p>
+<div data-ng-if="user.logged_in">
+	<nav class="main-menu" data-ng-controller="MenuController as menus">
+		<span class="menu-item" href="#" data-ng-repeat="menu in menus.menu_items" data-ng-click="menus.onclick($event, menu)" data-ng-class="{disabled:menu.disabled}">
+			{{menu.text}}
+		</span>
+	</nav>
+	<p>You are playing as {{user.name}}</p>
 
-		<div class="page-container" data-ng-if="!meeting.meeting_id || !meeting.player_id">
-			<ul class="meetings-chooser">
-				<li data-ng-repeat="meet in meetings_list" class=button" data-ng-click="app.join_meeting(meet.id)">{{meet.name}} hosted by {{meet.host}}</li>
-			</ul>
-			<form data-ng-submit="app.create_meeting()">
-				<input data-ng-model="action_data.meeting_name" type="text" required />
-				<button type="submit">Create Meeting</button>
-			</form>
-		</div>
-
-		<div class="page-container meeting-container" data-ng-if="meeting.meeting_id">
-			<div class="meeting-head">
-				<h3>{{meeting.meeting_name}}</h3>
-				<h4>Hosted by {{meeting.host_name}}</h4>
-			</div>
-			<div class="issue-container" data-ng-if="meeting.issue">
-				<h2><a data-ng-href="{{meeting.issue.link}}" target="_blank"><span class="issue-id">{{meeting.issue.id}}</span> {{meeting.issue.name}}</a></h2>
-				<div class="issue-description">
-					{{meeting.issue.desc}}
-					<a class="issue-link" target="_blank" data-ng-href="{{meeting.issue.link}}">More info</a>
-				</div>
-			</div>
-			<div class="meeting-board" data-ng-class="{'hide-cards': !meeting.show_cards, 'show-cards': meeting.show_cards} ">
-				<h3>Current Bids</h3>
-				<div data-ng-repeat="player in meeting.players" class="player" data-ng-class="{'has-bid': player.bid}">
-					<div class="card">
-						<h2 class="card-value" data-ng-if="meeting.show_cards">{{player.bid}}</h2>
-					</div>
-					<h5>{{player.name}}</h5>
-				</div>
-			</div>
-
-			<div class="bid-board" data-ng-controller="BidController as bids">
-				<h3>Make Bid</h3>
-				<ul class="possible-bids">
-					<li data-ng-repeat="bid in bids.possible_bids" data-ng-class="{chosen: bid.value == meeting.my_bid}" data-ng-click="bids.make_bid($event, bid.value)"><span  class="card">{{bid.text}}</span></li>
-				</ul>
-			</div>
-		</div>
-	</div>
-	<div class="page-container" data-ng-if="!user.logged_in">
-		<form data-ng-controller="LoginController as login" data-ng-submit="login.do_login($rootScope)">
-			<h1>You must log in to play</h1>
-			<div>
-				<label for="dispname">Display Name</label>
-				<input type="text" data-ng-model="dispname" id="dispname" />
-			</div>
-			<div>
-				<input type="checkbox" data-ng-model="use_local" id="use-local" />
-				<label for="use-local">Remember me on this machine</label>
-			</div>
-			<div>
-				<button type="submit">Log in</button>
-			</div>
+	<div class="page-container" data-ng-if="!meeting.meeting_id || !meeting.player_id">
+		<ul class="meetings-chooser">
+			<li data-ng-repeat="meet in meetings_list" class=button" data-ng-click="app.join_meeting(meet.id)">{{meet.name}} hosted by {{meet.host}}</li>
+		</ul>
+		<form data-ng-submit="app.create_meeting()">
+			<input data-ng-model="action_data.meeting_name" type="text" required />
+			<button type="submit">Create Meeting</button>
 		</form>
 	</div>
 
+	<div class="page-container meeting-container" data-ng-if="meeting.meeting_id">
+		<div class="meeting-head">
+			<h3>{{meeting.meeting_name}}</h3>
+			<h4>Hosted by {{meeting.host_name}}</h4>
+		</div>
+		<div class="issue-container" data-ng-if="meeting.issue">
+			<h2><a data-ng-href="{{meeting.issue.link}}" target="_blank"><span class="issue-id">{{meeting.issue.id}}</span> {{meeting.issue.name}}</a></h2>
+			<div class="issue-description">
+				{{meeting.issue.desc}}
+				<a class="issue-link" target="_blank" data-ng-href="{{meeting.issue.link}}">More info</a>
+			</div>
+		</div>
+		<div class="meeting-board" data-ng-class="{'hide-cards': !meeting.show_cards, 'show-cards': meeting.show_cards} ">
+			<h3>Current Bids</h3>
+			<div data-ng-repeat="player in meeting.players" class="player" data-ng-class="{'has-bid': player.bid}">
+				<div class="card">
+					<h2 class="card-value" data-ng-if="meeting.show_cards">{{player.bid}}</h2>
+				</div>
+				<h5>{{player.name}}</h5>
+			</div>
+		</div>
+
+		<div class="bid-board" data-ng-controller="BidController as bids">
+			<h3>Make Bid</h3>
+			<ul class="possible-bids">
+				<li data-ng-repeat="bid in bids.possible_bids" data-ng-class="{chosen: bid.value == meeting.my_bid}" data-ng-click="bids.make_bid($event, bid.value)"><span  class="card">{{bid.text}}</span></li>
+			</ul>
+		</div>
+	</div>
 </div>
+
+
+

@@ -29,7 +29,7 @@ function PP_Meeting(host_ws, host_name, meeting_name) {
 	this._id = auth.createGUID();
 	this._name = meeting_name;
 	this._players = {};
-	this.show_cards = false;
+	this._show_cards = false;
 	/**
 	 *
 	 * @type PP_Issue
