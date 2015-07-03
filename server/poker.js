@@ -4,41 +4,21 @@
 var settings = require( './settings' ).settings;
 
 // Get classes
-var PP_Responses = require( './classes/pp_response');
-var PP_SimpleErrorResponse = PP_Responses.PP_SimpleErrorResponse;
+var PP_SimpleErrorResponse = require( './classes/pp_response' ).PP_SimpleErrorResponse;
+var WebSocketServer = require( 'ws' ).Server;
+var PP_Controller = require( './pp_controller' ).PP_Controller;
 
 // Get helpers
-var PP_Logger = require( './helpers/pp_logger').PP_Logger;
+var PP_Logger = require( './helpers/pp_logger' ).PP_Logger;
 var logger = new PP_Logger;
-var PP_Jira = require('./helpers/pp_jira').PP_Jira;
-var jira = new PP_Jira;
-
-jira.authenticate('', '', function(jira){
-	if( jira.is_logged_in() ){
-		jira.get_issue('WEB-301', {'fields': 'summary'}, function(error, response, body, jira){
-			logger.log('');
-			logger.log('got issue');
-			logger.log(jira.get_dispname());
-			logger.log('response');
-			logger.log(response.statusCode);
-			logger.log('body');
-			logger.log_o(body, 3);
-			logger.log('');
-		});
-
-	}
-});
-
 
 // Get and setup WebSocketServer
-var WebSocketServer = require( 'ws' ).Server;
 var wss = new WebSocketServer( {
    host: settings.host,
    port: settings.port
 } );
 
-var PP_Controller = require('./pp_controller' ).PP_Controller;
-
+// Get controller
 var controller = new PP_Controller(wss);
 
 // Listen and respond

@@ -3,6 +3,7 @@
 // Get config
 var settings = require( '../settings' ).settings;
 
+var PP_Exceptions = require( './pp_exceptions');
 var PP_Logger = require( './pp_logger').PP_Logger;
 var logger = new PP_Logger;
 
@@ -12,44 +13,100 @@ var logger = new PP_Logger;
  * @constructor
  */
 function PP_Jira(){
-	// Set base URL
+	/**
+	 * Base URL for the Jira installation
+	 * @type {string}
+	 * @private
+	 */
 	this._jira_base_url = '' + settings.jira_url;
 	// Ensure ends in slash
 	if( this._jira_base_url.slice(-1) !== '/' ){
 		this._jira_base_url += '/';
 	}
-	// Set link URL
+	/**
+	 * Base URL for links to Jira tasks
+	 * @type {string}
+	 * @private
+	 */
 	this._jira_link_url = this._jira_base_url ? this._jira_base_url + 'browse/' : false;
 
-	// Create request object with default settings
+	/**
+	 * Request object.  With some defaults set
+	 * @type {request}
+	 * @private
+	 */
 	this._request = require('request').defaults({
 		baseUrl: this._jira_base_url + 'rest/api/2/',
 		json: true,
         jar: true
     });
 
-	this._username = false;
-	this._dispname = false;
-	this._post_callback = false;
+	/**
+	 * Username of the logged in user
+	 * @type {string}
+	 * @private
+	 */
+	this._username = '';
+	/**
+	 * Display name of the logged in user
+	 * @type {string}
+	 * @private
+	 */
+	this._dispname = '';
+	/**
+	 * Extra callback run after built-in callbacks
+	 * Gets the current PP_Jira object and the response body as paramters
+	 * @type {function|boolean}
+	 * @private
+	 */
+	this._post_callback_callback = false;
+	/**
+	 * Marker to avoid double simultaneous request
+	 * @type {boolean}
+	 * @private
+	 */
 	this._request_in_progress = false;
+	/**
+	 * Message set by built-in callback
+	 * @type {string}
+	 * @private
+	 */
 	this._message = '';
+	/**
+	 * Is the user currently logged in
+	 * @type {boolean}
+	 * @private
+	 */
 	this._logged_in = false;
 }
 
+/**
+ * Get the username of the currently logged in user
+ * @returns {string}
+ */
 PP_Jira.prototype.get_username = function(){
 	return this._username;
 };
+/**
+ * Get the display name of the currently logged in user
+ * @returns {string}
+ */
 PP_Jira.prototype.get_dispname = function(){
 	return this._dispname;
 };
+/**
+ * Returns whether or not a user is currently logged in
+ * @returns {boolean}
+ */
 PP_Jira.prototype.is_logged_in = function(){
 	return this._logged_in;
 };
+/**
+ * Gets the message set by the built-in callbacks
+ * @returns {string}
+ */
 PP_Jira.prototype.get_message = function(){
 	return this._message;
-};
-PP_Jira.prototype.is_request_in_progress = function(){
-	return this._request_in_progress;
 };
 
 /**
@@ -95,9 +152,22 @@ PP_Jira.prototype._get = function(service, data, callback, username, password) {
 	// Save this as a variable then wrap callback in an anonymous function in order to add the jira param
 	var jira = this;
 
+	if( this._request_in_progress ){
+		throw new PP_Exceptions.PP_Exception('Request already in progress');
+	}
+
 	// Run request
 	this._request_in_progress = true;
+	this._message = '';
 	this._request(opts, function(error, response, body){
+		// If we have a username assume we are logging in.  In this case the authentication routine handles the response
+		// Otherwise fail if 401 returned
+		if( !username && response.statusCode === 401 ){
+			throw new PP_Exceptions.PP_NotAuthorisedException('You must log in to complete that action');
+		}
+		// Request complete
+		jira._request_in_progress = false;
+		// Call callback
 		callback.call(this, error, response, body, jira);
 	});
 };
@@ -109,7 +179,7 @@ PP_Jira.prototype._get = function(service, data, callback, username, password) {
  * @param password string
  */
 PP_Jira.prototype.authenticate = function(username, password, callback){
-	this._post_callback = callback;
+	this._post_callback_callback = callback;
 	this._username = username;
 
 	// Run request
@@ -130,7 +200,7 @@ PP_Jira.prototype.authenticate = function(username, password, callback){
  */
 PP_Jira.prototype._authentication_callback = function(error, response, body, jira){
 	jira._logged_in = false;
-	jira._dispname = false;
+	jira._dispname = '';
 	switch( response.statusCode ){
 		case 200:
 			if( body.active ){
@@ -153,9 +223,9 @@ PP_Jira.prototype._authentication_callback = function(error, response, body, jir
 			break;
 	}
 
-	if( typeof jira._post_callback === 'function' ) {
-		jira._post_callback(jira, body);
-		jira._post_callback = false;
+	if( typeof jira._post_callback_callback === 'function' ) {
+		jira._post_callback_callback(jira, body);
+		jira._post_callback_callback = false;
 	}
 };
 
@@ -169,6 +239,16 @@ PP_Jira.prototype._authentication_callback = function(error, response, body, jir
  */
 PP_Jira.prototype.get_issue = function(issue_id, data, callback){
 	this._get('issue/' + issue_id, data, callback, false, false);
+};
+
+/**
+ * Gets a link to the specified issue in Jira
+ * No check that the issue exists is performed!
+ * @param issue_id string
+ * @returns {string}
+ */
+PP_Jira.prototype.get_link_for_issue = function(issue_id){
+	return this._jira_link_url + issue_id;
 };
 
 

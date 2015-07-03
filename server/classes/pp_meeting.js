@@ -3,7 +3,7 @@
 var PP_Responses = require( './pp_response');
 var PP_SuccessResponse = PP_Responses.PP_SuccessResponse;
 
-var PP_Exceptions = require( './pp_exceptions');
+var PP_Exceptions = require( '../helpers/pp_exceptions');
 var PP_Exception = PP_Exceptions.PP_Exception;
 var PP_PlayerNotFoundException = PP_Exceptions.PP_PlayerNotFoundException;
 var PP_NotAuthorisedException = PP_Exceptions.PP_NotAuthorisedException;
@@ -14,8 +14,7 @@ var PP_Issue = require( './pp_issue' ).PP_Issue;
 // Get helpers
 var PP_Logger = require( '../helpers/pp_logger').PP_Logger;
 var logger = new PP_Logger
-var PP_Auth = require( '../helpers/pp_auth').PP_Auth;
-var auth = new PP_Auth();
+var PP_Auth = require( '../helpers/pp_auth');
 
 
 	/**

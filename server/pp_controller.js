@@ -4,7 +4,7 @@
 var PP_Responses = require( './classes/pp_response');
 var PP_SuccessResponse = PP_Responses.PP_SuccessResponse;
 var PP_ListResponse = PP_Responses.PP_ListResponse;
-var PP_Exceptions = require( './classes/pp_exceptions')
+var PP_Exceptions = require( './helpers/pp_exceptions');
 var PP_MeetingNotFoundException = PP_Exceptions.PP_MeetingNotFoundException;
 var PP_Exception = PP_Exceptions.PP_Exception;
 
@@ -25,6 +25,7 @@ function PP_Controller(wss){
 	this.all_clients = wss.clients;
 	this._players = {};
 }
+
 PP_Controller.prototype.do_refresh = function(ws, data) {
 	for( var m in this._meetings ){
 		this._meetings[m ].update_all_with_status(true, 'refresh');
