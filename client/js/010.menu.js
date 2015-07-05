@@ -31,17 +31,22 @@ app.controller('MenuController', ['$scope', function($scope){
 				disabled: false
 			};
 		}
+		menu.menu_items.logout = {
+			text: 'Logout',
+			action: 'logout',
+			disabled: false
+		};
 	};
 
 	menu.update_menu_items($scope);
 
 	$scope.$on('pp_status_updated', function(){
-		log_o('$scope', $scope);
-		//$scope.$apply(function(){
-			menu.update_menu_items($scope);
-		//});
+		menu.update_menu_items($scope);
 	});
 
+	menu.logout = function() {
+		$scope.logout();
+	};
 
 	menu.onclick = function($event, $menu_item){
 		if( $menu_item.disabled ){
@@ -50,6 +55,10 @@ app.controller('MenuController', ['$scope', function($scope){
 			log_o('action', $menu_item);
 			if( typeof $menu_item.action === 'function' ) {
 				$menu_item.action($scope);
+			} else if( typeof menu[ $menu_item.action ] === 'function' ) {
+				menu[ $menu_item.action ]($scope);
+			} else {
+				$scope.do_action($menu_item.action);
 			}
 		}
 		$event.preventDefault();

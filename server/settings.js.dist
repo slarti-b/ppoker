@@ -2,10 +2,10 @@
 
 module.exports = {
 	settings: {
-		host: '',
+		host: 'poker.example.com',
 		port: 0,
-		jira_url: '',
-		debug: false
-
+		jira_url: 'https://jira.example.com/',
+		debug: false,
+		allow_guest: false
 	}
 };

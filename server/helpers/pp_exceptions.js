@@ -8,7 +8,7 @@ module.exports = {
 	 */
 	PP_Exception: function(message){
 		this.constructor.prototype.__proto__ = Error.prototype;
-		Error._captureStackTrace(this, this.constructor);
+		//Error._captureStackTrace(this, this.constructor);
 		this.name = this.constructor.name;
 		this.message = message;
 	},
@@ -20,7 +20,19 @@ module.exports = {
 	 */
 	PP_MeetingNotFoundException: function(message){
 		this.constructor.prototype.__proto__ = Error.prototype;
-		Error._captureStackTrace(this, this.constructor);
+		//Error._captureStackTrace(this, this.constructor);
+		this.name = this.constructor.name;
+		this.message = message;
+	},
+
+	/**
+	 * Exception if user is not logged in
+	 * @param message
+	 * @constructor
+	 */
+	PP_NotLoggedInException: function(message){
+		this.constructor.prototype.__proto__ = Error.prototype;
+		//Error._captureStackTrace(this, this.constructor);
 		this.name = this.constructor.name;
 		this.message = message;
 	},
@@ -32,7 +44,7 @@ module.exports = {
 	 */
 	PP_PlayerNotFoundException: function(message){
 		this.constructor.prototype.__proto__ = Error.prototype;
-		Error._captureStackTrace(this, this.constructor);
+		//Error._captureStackTrace(this, this.constructor);
 		this.name = this.constructor.name;
 		this.message = message;
 	},
@@ -44,7 +56,7 @@ module.exports = {
 	 */
 	PP_NotAuthorisedException: function(message){
 		this.constructor.prototype.__proto__ = Error.prototype;
-		Error._captureStackTrace(this, this.constructor);
+		//Error._captureStackTrace(this, this.constructor);
 		this.name = this.constructor.name;
 		this.message = message;
 	}

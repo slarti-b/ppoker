@@ -20,12 +20,12 @@ var PP_Auth = require( '../helpers/pp_auth');
 	/**
  * Class defining a meeting
  * @param host_ws websocket The connection for the person hosting the meeting
- * @param host_name string The name of the host
+ * @param host_player PP_Player The player of the host
  * @param meeting_name string The name or title for the meeting
  * @constructor
  */
-function PP_Meeting(host_ws, host_name, meeting_name) {
-	this._id = auth.createGUID();
+function PP_Meeting(host_ws, host_player, meeting_name) {
+	this._id = PP_Auth.createGUID();
 	this._name = meeting_name;
 	this._players = {};
 	this._show_cards = false;
@@ -35,18 +35,30 @@ function PP_Meeting(host_ws, host_name, meeting_name) {
 	 */
 	this._issue = false;
 
-	var host = this._add_player(host_ws, host_name);
-	this._host = host.get_id();
+	this._players[ host_player.get_id() ] = host_player;
+	this._host = host_player.get_id();
 }
 
 /**
  * Ends the meeting by informing all players that it has ended.
  * The meeting should still be removed from the server!
  */
-PP_Meeting.prototype.end = function(player_id) {
-	this._check_if_host(player_id);
+PP_Meeting.prototype.end = function(player) {
+	this._check_if_host(player.get_id());
+	this._id = false;
 	// inform all players
-	this.update_all(true, 'end_meeting', null);
+	var data = {
+		is_update: true,
+		you_are_host: false,
+		your_bid: false
+	};
+	for( var player_id in this._players ) {
+		this._update( this._players[ player_id ].get_ws(),
+		              true,
+		              'end_meeting',
+		              player_id,
+		              data );
+	}
 };
 
 /**
@@ -54,32 +66,38 @@ PP_Meeting.prototype.end = function(player_id) {
  *
  * @param ws websocket The connection for the player
  * @param name string The name of the player
+ * @param player PP_Player The player joining
  */
-PP_Meeting.prototype.join = function(ws, name, player_id) {
-	this._add_player(ws, name, player_id);
+PP_Meeting.prototype.join = function(ws, player) {
+	if( this._players.hasOwnProperty(player.get_id()) ) {
+		throw new PP_Exception('Player already in meeting');
+	}
 
-	this.update_all_with_status(true, 'player_joined', '' + name + ' has joined the this.');
+	this._players[ player.get_id() ] = player;
+	this.update_all_with_status(true, 'player_joined', '' + player.get_name() + ' has joined the this.');
 };
 
 /**
  * Removes a single player from the meeting
  * @param player_id string
  */
-PP_Meeting.prototype.leave = function(player_id) {
-	if( player_id === this._host ){
+PP_Meeting.prototype.leave = function(player) {
+	if( player.get_id() === this._host ){
 		throw new PP_Exception('The host cannot leave the meeting!  You can only end it...');
 	}
-	var player = this._get_player(player_id);
+	if( !this._players.hasOwnProperty(player.get_id()) ) {
+		throw new PP_Exception('You cannot leave a meeting you are not in!');
+	}
 	var player_name = player.get_name();
-	delete this._players[player_id];
+	delete this._players[player.get_id()];
 	this.update_all_with_status(true, 'update', player_name + ' has left the meeting');
 
 };
 
-PP_Meeting.prototype.set_bid = function(player_id, bid) {
-	logger.log('setting bid ' + bid + ' for player ' + player_id);
-	var player = this._get_player(player_id);
-	player.set_bid(bid);
+PP_Meeting.prototype.set_bid = function(player, bid) {
+	logger.log('setting bid ' + bid + ' for player ' + player.get_id());
+	var player_meeting = this._get_player(player.get_id());
+	player_meeting.set_bid(bid);
 	this.update_all_with_status(true, 'player_bid', false);
 };
 
@@ -92,8 +110,8 @@ PP_Meeting.prototype.set_bid = function(player_id, bid) {
  * @param description string The description of the _issue
  * @param link string A link to the _issue
  */
-PP_Meeting.prototype.set_issue = function( player_id, id, name, description, link ) {
-	this._check_if_host(player_id);
+PP_Meeting.prototype.set_issue = function( player, id, name, description, link ) {
+	this._check_if_host(player.get_id());
 	this._issue = new PP_Issue(id, name, description, link);
 	this._new_issue_set();
 };
@@ -106,8 +124,8 @@ PP_Meeting.prototype.set_issue = function( player_id, id, name, description, lin
  * @param name string The name of thr _issue
  * @param description string The description of the _issue
  */
-PP_Meeting.prototype.set_issue_with_jira_link = function( player_id, id, name, description ) {
-	this._check_if_host(player_id);
+PP_Meeting.prototype.set_issue_with_jira_link = function( player, id, name, description ) {
+	this._check_if_host(player.get_id());
 	this._issue = new PP_Issue(id, name, description, false);
 	this._issue.set_jira_link_from_id();
 	this._new_issue_set();
@@ -119,8 +137,8 @@ PP_Meeting.prototype.set_issue_with_jira_link = function( player_id, id, name, d
  * @param player_id string The player making the change
  * @param id string The ID of the _issue
  */
-PP_Meeting.prototype.set_issue_from_jira = function( player_id, id ) {
-	this._check_if_host(player_id);
+PP_Meeting.prototype.set_issue_from_jira = function( player, id ) {
+	this._check_if_host(player.get_id());
 	this._issue = new PP_Issue();
 	this._issue.set_from_jira(id);
 	this._new_issue_set();
@@ -134,8 +152,8 @@ PP_Meeting.prototype.set_issue_from_jira = function( player_id, id ) {
  * @param player_id string The player making the change
  * @param show_cards boolean The value to set.
  */
-PP_Meeting.prototype.set_show_cards = function(player_id, show_cards) {
-	this._check_if_host(player_id);
+PP_Meeting.prototype.set_show_cards = function(player, show_cards) {
+	this._check_if_host(player.get_id());
 	if( show_cards ){
 		this._show_cards = true;
 		this.update_all_with_status(true, 'cards_shown', 'Cards have been shown');
@@ -145,23 +163,6 @@ PP_Meeting.prototype.set_show_cards = function(player_id, show_cards) {
 	}
 };
 
-/**
- * Makes or updates the bid for a player
- * Updates all players with status
- *
- * @param player_id string The ID of the player to update
- * @param bid The bid made
- * @returns {boolean}
- */
-PP_Meeting.prototype.bid = function(player_id, bid){
-	if( this._players[ player_id ] ) {
-		this._players[ player_id ].set_bid(bid);
-		this.update_all_with_status(true, 'bid_made');
-		return true;
-	} else {
-		return false;
-	}
-};
 
 /**
  * Sends an update to all players with the new status
@@ -184,6 +185,9 @@ PP_Meeting.prototype.update_all_with_status = function(success, action, notice){
  * @param data {} The data to send with the update
  */
 PP_Meeting.prototype.update_all = function(success, action, data){
+	if( !data ){
+		data = {};
+	}
 	for( var player_id in this._players ) {
 		if( success ) {
 			if( this._host ){
@@ -226,7 +230,10 @@ PP_Meeting.prototype.get_name = function() {
  * @returns {boolean|string}
  */
 PP_Meeting.prototype.get_host_name = function() {
+	logger.log('get_host_name');
+	logger.log(this._host);
 	if( this._host && this._players[ this._host ] ) {
+		logger.log('found host');
 		return this._players[ this._host ].get_name();
 	} else {
 		return false;
@@ -281,25 +288,13 @@ PP_Meeting.prototype._get_players_for_response = function(){
 	return players;
 };
 
-/**
- * Adds a player to the meeting
- *
- * @param ws websocket The connection for the player to add
- * @param name string The name of the player to add
- * @returns {PP_Player}
- * @private
- */
-PP_Meeting.prototype._add_player = function(ws, name, player_id) {
-	var id = player_id ? player_id : auth.createGUID();
-	var player = new PP_Player(ws, id, name);
-	this._players[id]  = player;
-
-	return player;
-};
-
 PP_Meeting.prototype.has_player = function(player_id) {
 	return this._players && this._players[player_id];
 };
+
+PP_Meeting.prototype.is_host = function(player){
+	return player && this._host === player.get_id();
+}
 
 /**
  * Generates a status update response body

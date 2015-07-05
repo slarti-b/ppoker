@@ -9,7 +9,7 @@
 	</nav>
 	<p>You are playing as {{user.name}}</p>
 
-	<div class="page-container" data-ng-if="!meeting.meeting_id || !meeting.player_id">
+	<div class="page-container" data-ng-if="!meeting.meeting_id">
 		<ul class="meetings-chooser">
 			<li data-ng-repeat="meet in meetings_list" class=button" data-ng-click="app.join_meeting(meet.id)">{{meet.name}} hosted by {{meet.host}}</li>
 		</ul>

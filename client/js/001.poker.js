@@ -9,6 +9,50 @@ function log_o(label, obj){
 var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 
 (function(app, options){
+
+	function PP_Storage($localStorage, default_vals){
+		this._local_storage = $localStorage.$default(default_vals);
+		this._default_vals = default_vals;
+		this._storage = {};
+		this._use_local_storage = false;
+
+
+		this.set_storage_type= function(use_local){
+			if( use_local ){
+				this._storage = this._local_storage;
+				this._use_local_storage = true;
+			}else{
+				this._storage = {};
+				for( var k in this._default_vals ) {
+					this._storage[k] = this._default_vals[k];
+				}
+				this._use_local_storage = false;
+			}
+		};
+
+		this.get = function(name){
+			return this._storage[name];
+		}
+		this.set = function(name, value){
+			return this._storage[name] = value;
+		}
+
+		this.clear = function(){
+			if( this._use_local_storage ) {
+				for( var k in this._storage ){
+					delete this._storage[k];
+				}
+			} else {
+				this._storage = {};
+			}
+			for( var k in this._default_vals ) {
+				this._storage[k] = this._default_vals[k];
+			}
+		}
+
+		this.set_storage_type($localStorage.pk_use_local || default_vals.pk_use_local);
+	};
+
 	var base_controller = {
 
 		/* WebSocket Handling */
@@ -40,6 +84,9 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 						case 'meetings_list':
 							$scope.update_meetings_list(data);
 							break;
+						case 'login':
+							$scope.post_login(data);
+							break;
 					}
 				}
 			} else {
@@ -54,25 +101,10 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 			if( $scope.meeting.meeting_id ){
 				data.meeting_id = $scope.meeting.meeting_id;
 			}
-			if( $scope.meeting.player_id ){
-				data.player_id = $scope.meeting.player_id;
+			if( $scope.user.player_id ){
+				data.player_id = $scope.user.player_id;
 			}
 			$scope.ws.$emit(action, data);
-		},
-		ws_send_message: function($scope, message){
-			$scope.ws.$emit('message', message);
-		},
-
-		/* Local Storage handling */
-		ls_set_storage_type: function($scope, use_local){
-			log_o('user', $scope.user);
-			if( use_local ){
-				$scope.storage = $scope.local_store;
-				$scope.use_local_storage = true;
-			}else{
-				$scope.storage = $scope.session_store;
-				$scope.use_local_storage = false;
-			}
 		},
 
 		/* Update */
@@ -81,8 +113,8 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 			log_o('before', $scope.meeting);
 			$scope.$apply(function(){
 				$scope.meeting.meeting_id = data.meeting;
-				$scope.meeting.player_id = data.player;
-				$scope.storage.player_id = data.player;
+				$scope.user.player_id = data.player;
+				$scope.storage.set('player_id', data.player);
 				$scope.meeting.meeting_name = data.data.meeting;
 				$scope.meeting.host_name = data.data.host;
 				$scope.meeting.players = data.data.players;
@@ -107,6 +139,23 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 
 		},
 
+		post_login: function($scope, data){
+			log_o('post_login', data);
+			$scope.$apply(function() {
+				if( data.data.logged_in ) {
+					$scope.user.player_id = data.player;
+					$scope.user.logged_in = true;
+					$scope.user.name = data.data.player_dispname;
+					$scope.user.avatar = data.data.avatar;
+				} else {
+					$scope.user.player_id = false;
+					$scope.user.logged_in = false;
+					$scope.user.name = '';
+					$scope.user.avatar = '';
+				}
+			});
+		},
+
 		update_meetings_list: function($scope, data){
 			log_o('Updating meetings', data.data);
 			log_o('meetings_list', $scope.meetings_list);
@@ -124,7 +173,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		get_initial_status: function($scope) {
 			return {
 				meeting_id: false,
-				player_id: $scope.storage.pp_player_id,
+				player_id: $scope.storage.get('pp_player_id'),
 				meeting_name: false,
 				host_name: false,
 				players: {},
@@ -137,8 +186,8 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		/* User handling */
 		get_initial_user: function($scope){
 			return {
-				logged_in: $scope.storage.pp_dispname ? true : false,
-				name: $scope.storage.pp_dispname
+				logged_in: $scope.storage.get('pp_dispname') ? true : false,
+				name: $scope.storage.get('pp_dispname')
 			}
 		},
 
@@ -152,8 +201,10 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 			$scope.do_action('create_meeting', data)
 		},
 
-		join_meeting: function($scope, meeting_id) {
-
+		logout: function($scope) {
+			$scope.storage.clear();
+			$scope.user = {};
+			$scope.do_action('logout');
 		}
 	};
 
@@ -166,8 +217,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 			pp_dispname: '',
 			pp_player_id: false
 		};
-		$scope.local_store = $localStorage.$default(default_vals);
-		$scope.session_store = $sessionStorage.$default(default_vals);
+		$scope.storage = new PP_Storage($localStorage, default_vals);
 
 		// Open the websocket connection
 		$scope.ws = base_controller.ws_create_connection($websocket);
@@ -183,19 +233,6 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		$scope.do_action = function(action, data){
 			return base_controller.ws_do_action($scope, action, data);
 		};
-		this.send_message = function(message) {
-			return base_controller.ws_send_message($scope, message);
-		};
-
-		$scope.set_storage_type = function(use_local){
-			log_o('set_storage_type', use_local);
-			return base_controller.ls_set_storage_type($scope, use_local)
-		};
-		$scope.set_storage_type($scope.local_store.pk_use_local);
-
-		$scope.update_status = function(event, data){
-			//base_controller.update_status($scope, data);
-		};
 
 		$scope.$on('pp_update_status', function(event, data){
 			base_controller.update_status($scope, data);
@@ -206,6 +243,9 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		$scope.update_meetings_list = function(data){
 			return base_controller.update_meetings_list($scope, data);
 		};
+		$scope.post_login = function(data){
+			return base_controller.post_login($scope, data);
+		}
 		$scope.action_data = {};
 		$scope.meetings_list = [];
 
@@ -213,13 +253,15 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		log_o('$scope.meeting', $scope.meeting);
 		this.join_meeting = function(meeting_id){
 			$scope.do_action('join_meeting', {
-				meeting_id: meeting_id,
-				player_name: $scope.storage.pp_dispname
+				meeting_id: meeting_id
 			});
 		};
 		this.create_meeting = function(){
 			base_controller.create_meeting($scope);
 		};
+		$scope.logout = function(){
+			return base_controller.logout($scope);
+		}
 
 	}]);
 

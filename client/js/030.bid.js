@@ -53,7 +53,7 @@
 		}
 	};
 
-	app.controller('BidController', ['$scope', '$localStorage', '$sessionStorage', '$websocket', function($scope, $localStorage, $sessionStorage, $websocket) {
+	app.controller('BidController', ['$scope', '$localStorage', '$websocket', function($scope, $localStorage, $websocket) {
 		bid_controller.$scope = $scope;
 		this.possible_bids = bid_controller.possible_bids;
 		this.make_bid = bid_controller.make_bid;
