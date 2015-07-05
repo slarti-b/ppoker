@@ -94,6 +94,12 @@ PP_Meeting.prototype.leave = function(player) {
 
 };
 
+PP_Meeting.prototype.set_ws_for_player = function(player, ws){
+	if( this._players[player.get_id()] ){
+		this._players[ player.get_id() ].set_ws(ws);
+	}
+};
+
 PP_Meeting.prototype.set_bid = function(player, bid, issue_id) {
 	logger.log('setting bid ' + bid + ' for player ' + player.get_id());
 	if( issue_id ){

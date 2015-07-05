@@ -18,6 +18,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 
 
 		this.set_storage_type= function(use_local){
+			log_o('setting lcoal storage', use_local);
 			if( use_local ){
 				this._storage = this._local_storage;
 				this._use_local_storage = true;
@@ -31,10 +32,10 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		};
 
 		this.get = function(name){
-			return this._storage[name];
+			return this._storage['pp_' + name];
 		}
 		this.set = function(name, value){
-			return this._storage[name] = value;
+			return this._storage['pp_' + name] = value;
 		}
 
 		this.clear = function(){
@@ -50,7 +51,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 			}
 		}
 
-		this.set_storage_type($localStorage.pk_use_local || default_vals.pk_use_local);
+		this.set_storage_type($localStorage.pp_use_local || default_vals.pp_use_local);
 	};
 
 	var base_controller = {
@@ -65,7 +66,15 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		},
 		ws_connected: function($scope, event){
 			console.log('Websocket connected!');
-			base_controller.ws_do_action($scope, 'list_meetings', {});
+			log($scope.storage.get('player_id'));
+			if( $scope.storage.get('player_id') ){
+				var data = {
+					player_id: $scope.storage.get('player_id')
+				};
+				base_controller.ws_do_action($scope, 'connect', data);
+			} else {
+				base_controller.ws_do_action($scope, 'list_meetings', {});
+			}
 
 		},
 		ws_closed: function(){
@@ -144,6 +153,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 			$scope.$apply(function() {
 				if( data.data.logged_in ) {
 					$scope.user.player_id = data.player;
+					$scope.storage.set('player_id', data.player);
 					$scope.user.logged_in = true;
 					$scope.user.authenticated = data.data.authenticated_user;
 					$scope.user.name = data.data.player_dispname;
@@ -175,7 +185,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		get_initial_status: function($scope) {
 			return {
 				meeting_id: false,
-				player_id: $scope.storage.get('pp_player_id'),
+				player_id: $scope.storage.get('player_id'),
 				meeting_name: false,
 				host_name: false,
 				players: {},
@@ -188,8 +198,8 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		/* User handling */
 		get_initial_user: function($scope){
 			return {
-				logged_in: $scope.storage.get('pp_dispname') ? true : false,
-				name: $scope.storage.get('pp_dispname')
+				logged_in: $scope.storage.get('dispname') ? true : false,
+				name: $scope.storage.get('dispname')
 			}
 		},
 
@@ -251,8 +261,6 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		$scope.action_data = {};
 		$scope.meetings_list = [];
 
-		log_o('$scope.user', $scope.user);
-		log_o('$scope.meeting', $scope.meeting);
 		this.join_meeting = function(meeting_id){
 			$scope.do_action('join_meeting', {
 				meeting_id: meeting_id

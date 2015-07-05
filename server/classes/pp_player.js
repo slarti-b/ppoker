@@ -29,6 +29,10 @@ PP_Player.prototype.get_ws = function(){
 	return this._ws;
 };
 
+PP_Player.prototype.set_ws = function(ws) {
+	return this._ws = ws;
+}
+
 /**
  * Gets the name
  * @returns string

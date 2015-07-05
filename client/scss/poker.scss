@@ -112,7 +112,7 @@
     display: none;
   }
 }
-label.button{
+button, .button{
   border: 1px solid #000000;
   padding: 0 3px;
   text-align: center;
@@ -123,6 +123,12 @@ label.button{
   &.active{
     background: #008000;
   }
+}
+
+li.button{
+  list-style-type: none;
+  width: 100%;
+
 }
 
 @mixin issue-elements{

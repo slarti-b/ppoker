@@ -32,8 +32,25 @@ function PP_Controller(wss){
 }
 
 PP_Controller.prototype.do_connect = function(ws, data){
-	var player = this._get_player_from_data(data);
-	return true;
+	logger.log('connect');
+	logger.log_o(data, 1);
+	var player = this._get_player_from_data(data, true);
+	logger.log_o(player, 1);
+	logger.log_o(this._players, 2);
+	if( player ) {
+		var found_meeting = false;
+		for( var m in this._meetings ){
+			if( this._meetings[ m ].has_player()){
+				found_meeting = true;
+				this._meetings[ m ].set_ws_for_player(player, ws);
+				this._meetings[ m ].update_all_with_status(true, 'reconnect')
+				break;
+			}
+		}
+		return true;
+	} else {
+		return this.do_list_meetings(ws, data);
+	}
 };
 
 PP_Controller.prototype.do_logout = function(ws, data){
@@ -88,16 +105,20 @@ PP_Controller.prototype.do_refresh_all = function(ws, data) {
 	}
 };
 
-PP_Controller.prototype._get_player = function(player_id){
+PP_Controller.prototype._get_player = function(player_id, test_only){
 	if( player_id && this._players.hasOwnProperty(player_id) ){
 		return this._players[ player_id ];
 	}
 
-	throw new PP_Exceptions.PP_NotLoggedInException('You must log in first');
+	if( true === test_only ){
+		return false
+	} else {
+		throw new PP_Exceptions.PP_NotLoggedInException('You must log in first');
+	}
 };
 
-PP_Controller.prototype._get_player_from_data = function(data) {
-	return this._get_player( data.player_id );
+PP_Controller.prototype._get_player_from_data = function(data, test_only) {
+	return this._get_player( data.player_id, test_only );
 };
 
 
