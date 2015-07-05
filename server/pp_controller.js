@@ -186,7 +186,7 @@ PP_Controller.prototype.do_leave_meeting = function(ws, data) {
 	// Leave meeting.  This will inform everyone else
 	meeting.leave(player);
 	// Inform the person themselves that it has succeeded
-	this.send_message(ws, new PP_SuccessResponse('left_meeting', null, false, false))
+	this.send_message(ws, new PP_SuccessResponse('left_meeting', {is_update: true}, player.get_id(), false))
 
 	return true;
 };
