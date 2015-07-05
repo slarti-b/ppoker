@@ -3,7 +3,7 @@
 
 <div data-ng-if="user.logged_in">
 	<nav class="main-menu" data-ng-controller="MenuController as menus">
-		<span class="menu-item" href="#" data-ng-repeat="menu in menus.menu_items" data-ng-click="menus.onclick($event, menu)" data-ng-class="{disabled:menu.disabled}">
+		<span class="menu-item" href="#" data-ng-repeat="menu in menus.menu_items" data-ng-hide="menu.hide" data-ng-click="menus.onclick($event, menu)" data-ng-class="{disabled:menu.disabled}">
 			{{menu.text}}
 		</span>
 	</nav>
@@ -24,28 +24,62 @@
 			<h3>{{meeting.meeting_name}}</h3>
 			<h4>Hosted by {{meeting.host_name}}</h4>
 		</div>
-		<div class="issue-container" data-ng-if="meeting.issue">
-			<h2><a data-ng-href="{{meeting.issue.link}}" target="_blank"><span class="issue-id">{{meeting.issue.id}}</span> {{meeting.issue.name}}</a></h2>
-			<div class="issue-description">
-				{{meeting.issue.desc}}
-				<a class="issue-link" target="_blank" data-ng-href="{{meeting.issue.link}}">More info</a>
-			</div>
-		</div>
-		<div class="meeting-board" data-ng-class="{'hide-cards': !meeting.show_cards, 'show-cards': meeting.show_cards} ">
-			<h3>Current Bids</h3>
-			<div data-ng-repeat="player in meeting.players" class="player" data-ng-class="{'has-bid': player.bid}">
-				<div class="card">
-					<h2 class="card-value" data-ng-if="meeting.show_cards">{{player.bid}}</h2>
+		<div class="set-issue-container" data-ng-show="show_set_issue()">
+			<h2>Set issue</h2>
+			<form data-ng-controller="SetIssueContainer as issue" data-ng-submit="issue.set()">
+				<div class="button-container">
+					<input type="radio" data-ng-model="set_using" data-ng-disabled="!user.authenticated" value="jira" id="set-using-jira" />
+					<label for="set-using-jira" class="button" data-ng-class="{active:set_using_jira(), disabled: !user.authenticated}">Set From Jira</label>
+					<input type="radio" data-ng-model="set_using" value="jira_link" id="set-using-jiralink" />
+					<label for="set-using-jiralink" class="button" data-ng-class="{active:set_using_jira_link()}">Set With Jira Link</label>
+					<input type="radio" data-ng-model="set_using" value="manually" id="set-manually" />
+					<label for="set-manually" class="button" data-ng-class="{active:set_manually()}">Set Manually</label>
 				</div>
-				<h5>{{player.name}}</h5>
-			</div>
+				<div class="issue-row">
+					<label for="issue-id">Issue ID</label>
+					<input id="issue-id" type="text" data-ng-model="issue_id" required placeholder="WEB-1234" />
+				</div>
+				<div class="issue-row">
+					<label for="issue-name">Issue Title</label>
+					<input id="issue-name" type="text" data-ng-model="issue_name" data-ng-disabled="set_using_jira()" required placeholder="My Issue" />
+				</div>
+				<div class="issue-row">
+					<label for="issue-desc">Issue Description</label>
+					<textarea id="issue-desc" data-ng-model="issue_desc" data-ng-disabled="set_using_jira()" placeholder="An optional description of the issue"></textarea>
+				</div>
+				<div class="issue-row">
+					<label for="issue-link">Issue Link</label>
+					<input id="issue-link" type="text" data-ng-model="issue_link" data-ng-disabled="!set_manually()" required placeholder="https://www.example.com/issue/ABC"/>
+				</div>
+				<div class="issue-row">
+					<button type="submit">Set Issue</button>
+				</div>
+			</form>
 		</div>
+		<div class="meeting-board-container" data-ng-show="show_main_board()">
+			<div class="issue-container" data-ng-if="meeting.issue">
+				<h2><a data-ng-href="{{meeting.issue.link}}" target="_blank"><span class="issue-id">{{meeting.issue.id}}</span> {{meeting.issue.name}}</a></h2>
+				<div class="issue-description">
+					{{meeting.issue.desc}}
+					<a class="issue-link" target="_blank" data-ng-href="{{meeting.issue.link}}">More info</a>
+				</div>
+			</div>
+			<div class="meeting-board" data-ng-class="{'hide-cards': !meeting.show_cards, 'show-cards': meeting.show_cards} ">
+				<h3>Current Bids</h3>
+				<div data-ng-repeat="player in meeting.players" class="player" data-ng-class="{'has-bid': player.bid}">
+					<div class="card">
+						<h2 class="card-value" data-ng-if="meeting.show_cards">{{player.bid}}</h2>
+					</div>
+					<h5>{{player.name}}</h5>
+				</div>
+			</div>
 
-		<div class="bid-board" data-ng-controller="BidController as bids">
-			<h3>Make Bid</h3>
-			<ul class="possible-bids">
-				<li data-ng-repeat="bid in bids.possible_bids" data-ng-class="{chosen: bid.value == meeting.my_bid}" data-ng-click="bids.make_bid($event, bid.value)"><span  class="card">{{bid.text}}</span></li>
-			</ul>
+			<div class="bid-board" data-ng-controller="BidController as bids">
+				<h3>Make Bid</h3>
+				<ul class="possible-bids">
+					<li data-ng-repeat="bid in bids.possible_bids" data-ng-class="{chosen: bid.value == meeting.my_bid}" data-ng-click="bids.make_bid($event, bid.value)"><span  class="card">{{bid.text}}</span></li>
+				</ul>
+			</div>
 		</div>
 	</div>
 </div>

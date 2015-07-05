@@ -126,16 +126,16 @@ PP_Controller.prototype.do_set_issue = function(ws, data) {
 	var meeting = this._get_meeting_from_data(data, 'set_issue');
 
 	var issue_id = data.issue_id;
-	var method = data.issue_set_method;
+	var method = data.set_using;
 
 	switch( method ) {
-		case 'fetch_from_jira':
+		case 'jira':
 			meeting.set_issue_from_jira(player, issue_id);
 			break;
-		case 'add_jira_link':
+		case 'jira_link':
 			meeting.set_issue_with_jira_link(player, issue_id, data.issue_name, data.issue_desc);
 			break;
-		case 'manual':
+		case 'manually':
 			meeting.set_issue(player, issue_id, data.issue_name, data.issue_desc, data.issue_link);
 			break;
 		default:

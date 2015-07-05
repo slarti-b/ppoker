@@ -115,7 +115,7 @@ PP_Jira.prototype.get_message = function(){
  * @returns {string|boolean}
  */
 PP_Jira.prototype.get_jira_link_url = function(issue_id){
-	return this._jira_link_url && issue_id ? this._jira_base_url + issue_id : false;
+	return this._jira_link_url && issue_id ? this._jira_link_url + issue_id : false;
 };
 
 /**

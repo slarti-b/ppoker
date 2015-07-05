@@ -104,3 +104,54 @@
     }
   }
 }
+
+.button-container{
+  @include equalwidth;
+  input{
+    display: none;
+  }
+}
+label.button{
+  border: 1px solid #000000;
+  padding: 0 3px;
+  text-align: center;
+  cursor: pointer;
+  &.disabled{
+    cursor: not-allowed;
+  }
+  &.active{
+    background: #008000;
+  }
+}
+
+@mixin issue-elements{
+  padding: 0;
+  line-height: 2em;
+  font-size: 1.2em;
+}
+.issue-row{
+  @include grid-row;
+  padding-top: 10px;
+  label, input, textarea{
+    @media #{$small-up} {
+      @include grid-column($columns: 12);
+      @include issue-elements;
+    }
+  }
+  label{
+    @media #{$medium-up} {
+      @include grid-column($columns:3);
+      @include issue-elements;
+    }
+  }
+  input, textarea{
+    @media #{$medium-up} {
+      @include grid-column($columns:9);
+      @include issue-elements;
+    }
+  }
+  button{
+    @include grid-column($columns:12);
+    @include issue-elements;
+  }
+}

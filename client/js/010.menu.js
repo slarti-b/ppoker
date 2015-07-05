@@ -2,40 +2,57 @@
 
 app.controller('MenuController', ['$scope', function($scope){
 	var menu = this;
-	menu.menu_items = {};
+	menu.menu_items = [];
 
 	menu.update_menu_items = function($scope){
-		menu.menu_items = {};
+		menu.menu_items = [];
 		if( $scope.meeting.is_host ){
-			menu.menu_items.show_cards = {
+			menu.menu_items.push( {
+				text: 'Change Issue',
+				action: function($scope){
+					$scope.meeting.board_view = 'set_issue';
+					menu.update_menu_items($scope);
+				},
+				disabled: $scope.show_set_issue(),
+				hide: $scope.show_set_issue()
+			} );
+			menu.menu_items.push( {
+				text: 'View Board',
+				action: function($scope){
+					$scope.meeting.board_view = 'main_board';
+					menu.update_menu_items($scope);
+				},
+				disabled: $scope.show_main_board(),
+				hide: $scope.show_main_board()
+			} );
+			menu.menu_items.push( {
 				text: 'Show Cards',
 				action: function($scope){
 					$scope.do_action('show_cards');
 				},
-				disabled: !$scope.meeting.all_chosen
-			};
-			menu.menu_items.change_issue = {
-				text: 'Change Issue',
-				action: 'set_issue',
-				disabled: false
-			};
-			menu.menu_items.end_meeting = {
+				disabled: !$scope.show_main_board(), // || !$scope.meeting.all_chosen,
+				hide: false
+			} );
+			menu.menu_items.push( {
 				text: 'End Meeting',
 				action: 'end_meeting',
-				disabled: false
-			};
+				disabled: false,
+				hide: false
+			} );
 		} else if( $scope.meeting.meeting_id ) {
-			menu.menu_items.leave_meeting = {
+			menu.menu_items.push( {
 				text: 'Leave Meeting',
 				action: 'leave_meeting',
-				disabled: false
-			};
+				disabled: false,
+				hide: false
+			} );
 		}
-		menu.menu_items.logout = {
+		menu.menu_items.push( {
 			text: 'Logout',
 			action: 'logout',
-			disabled: false
-		};
+			disabled: false,
+			hide: false
+		} );
 	};
 
 	menu.update_menu_items($scope);

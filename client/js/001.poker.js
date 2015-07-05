@@ -145,11 +145,13 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 				if( data.data.logged_in ) {
 					$scope.user.player_id = data.player;
 					$scope.user.logged_in = true;
+					$scope.user.authenticated = data.data.authenticated_user;
 					$scope.user.name = data.data.player_dispname;
 					$scope.user.avatar = data.data.avatar;
 				} else {
 					$scope.user.player_id = false;
 					$scope.user.logged_in = false;
+					$scope.user.authenticated = false;
 					$scope.user.name = '';
 					$scope.user.avatar = '';
 				}
@@ -261,7 +263,30 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		};
 		$scope.logout = function(){
 			return base_controller.logout($scope);
+		};
+
+		$scope.get_board_view = function(){
+			switch( $scope.meeting.board_view ) {
+				case 'set_issue':
+					return 'set_issue';
+					break;
+			}
+			// If we get this far set it to be safe
+			$scope.meeting.board_view = 'main_board';
+			return 'main_board';
+		};
+		$scope.show_main_board = function(){
+			return 'main_board' === $scope.get_board_view();
+		};
+		$scope.show_set_issue = function(){
+			return 'set_issue' === $scope.get_board_view();
+		};
+
+		$scope.set_main_board_view = function(){
+			$scope.meeting.board_view ='main_board';
 		}
+
+
 
 	}]);
 
