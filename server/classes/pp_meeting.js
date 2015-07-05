@@ -94,8 +94,13 @@ PP_Meeting.prototype.leave = function(player) {
 
 };
 
-PP_Meeting.prototype.set_bid = function(player, bid) {
+PP_Meeting.prototype.set_bid = function(player, bid, issue_id) {
 	logger.log('setting bid ' + bid + ' for player ' + player.get_id());
+	if( issue_id ){
+		if( !this._issue || issue_id !== this._issue.id ) {
+			throw new PP_Exception('issue has changed since bid made');
+		}
+	}
 	var player_meeting = this._get_player(player.get_id());
 	player_meeting.set_bid(bid);
 	this.update_all_with_status(true, 'player_bid', false);

@@ -48,7 +48,8 @@
 		make_bid: function(event, bid){
 			log_o('bid', bid);
 			bid_controller.$scope.do_action('set_bid', {
-				bid: bid
+				bid: bid,
+				issue_id: bid_controller.$scope.meeting.issue.id
 			});
 		}
 	};
