@@ -27,14 +27,11 @@ wss.on( 'connection', function( ws ) {
 		try {
 			message = JSON.parse( message );
 
-			logger.log_o( message );
 			var action = 'do_' + message.event;
-			logger.log('Action: ' + action);
 			// All properties do_foo on the controller should be functions which take the ws and message and return boolean
 			// The actions should send any response they want to send themselves, unless they simply want a failed event returned
 			// Bit of a dirty hack, but works
 			if( typeof controller[action] === 'function' ) {
-				logger.log('action found');
 				if( ! controller[ action ]( ws, message.data ) ) {
 					// Action failed.  Return error
 					controller.send_message(ws, new PP_SimpleErrorResponse( message.event, 'Action ' + message.event + ' failed' ) );

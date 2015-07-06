@@ -54,11 +54,12 @@
   cursor: not-allowed;
 }
 
+$card-width: 5em;
 .card{
   height: 8em;
   border: 1px solid black;
   border-radius: 3px;
-  width: 5em;
+  width: $card-width;
   text-align: center;
   vertical-align: middle;
   display: table-cell;
@@ -68,8 +69,9 @@
   margin-top: 10px;
   .player{
     display: inline-block;
-    float: left;
     margin: 0 5px;
+    width: $card-width;
+    float: left;
   }
   h5{
     margin-top: 0;

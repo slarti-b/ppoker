@@ -41,6 +41,7 @@ function PP_Jira(){
         jar: true
     });
 
+	this._callback_args = false;
 	/**
 	 * Username of the logged in user
 	 * @type {string}
@@ -178,9 +179,10 @@ PP_Jira.prototype._get = function(service, data, callback, username, password) {
  * @param username string
  * @param password string
  */
-PP_Jira.prototype.authenticate = function(username, password, callback){
+PP_Jira.prototype.authenticate = function(username, password, callback, args){
 	this._post_callback_callback = callback;
 	this._username = username;
+	this._callback_args = args;
 
 	// Run request
 	this._get( 'myself', false, this._authentication_callback, username, password);
@@ -201,30 +203,34 @@ PP_Jira.prototype.authenticate = function(username, password, callback){
 PP_Jira.prototype._authentication_callback = function(error, response, body, jira){
 	jira._logged_in = false;
 	jira._dispname = '';
-	switch( response.statusCode ){
-		case 200:
-			if( body.active ){
-				jira._logged_in = true;
-				jira._message = 'Login Succeeded';
-				jira._dispname = body.displayName;
-			}
-			break;
-		case 401:
-			jira._message = 'Login Failed';
-			break;
-		case 403:
-			jira._message = 'Login attempt refused';
-			break;
-		case 404:
-			jira._message = 'Authentication succeeded but user not found!';
-			break;
-		default:
-			jira._message = 'Login Failed with code ' + response.statusCode + ' ' + response.statusText;
-			break;
+	if( response && response instanceof Object && response.hasOwnProperty('statusCode') ) {
+		switch( response.statusCode ){
+			case 200:
+				if( body.active ){
+					jira._logged_in = true;
+					jira._message = 'Login Succeeded';
+					jira._dispname = body.displayName;
+				}
+				break;
+			case 401:
+				jira._message = 'Login Failed';
+				break;
+			case 403:
+				jira._message = 'Login attempt refused';
+				break;
+			case 404:
+				jira._message = 'Authentication succeeded but user not found!';
+				break;
+			default:
+				jira._message = 'Login Failed with code ' + response.statusCode + ' ' + response.statusText;
+				break;
+		}
+	} else {
+		jira._message = 'Login failed (no response received)';
 	}
 
 	if( typeof jira._post_callback_callback === 'function' ) {
-		jira._post_callback_callback(jira, body);
+		jira._post_callback_callback(jira, body, jira._callback_args);
 		jira._post_callback_callback = false;
 	}
 };

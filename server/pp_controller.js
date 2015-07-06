@@ -66,7 +66,6 @@ PP_Controller.prototype.do_logout = function(ws, data){
 	}
 	delete this._players[ player.get_id() ];
 	var message = new PP_SuccessResponse('logout', {is_update: true}, false, null);
-	logger.log_o( message );
 	ws.send( JSON.stringify(message) );
 	return true;
 };
@@ -81,22 +80,43 @@ PP_Controller.prototype.do_login = function(ws, data) {
 			var data = {
 				logged_in: true,
 				authenticated_user: false,
-				player_dispname: player.get_name(),
-				avatar: ''
+				player_dispname: player.get_name()
 			};
 			var message = new PP_SuccessResponse('login', data, player.get_id(), null);
-			logger.log_o( message );
 			ws.send( JSON.stringify(message) );
 			return true;
 		}
 	} else {
-		PP_Auth.login(data.username, data.password, this._post_login);
+		PP_Auth.login(data.username, data.password, this._post_login, {ws: ws, controller: this});
 		return true;
 	}
 };
 
-PP_Controller.prototype._post_login = function(jira, body){
-
+/**
+ *
+ * @param jira {PP_Jira}
+ * @param body {}
+ * @param ws
+ * @private
+ */
+PP_Controller.prototype._post_login = function(jira, body, args){
+	var ws = args.ws;
+	var controller = args.controller;
+	logger.log_o(body);
+	if( jira.is_logged_in() ){
+		var player = new PP_Player( ws, PP_Auth.createGUID(), body.displayName );
+		controller._players[ player.get_id() ] = player;
+		var data = {
+			logged_in: true,
+			authenticated_user: true,
+			player_dispname: player.get_name()
+		};
+		var message = new PP_SuccessResponse('login', data, player.get_id(), null);
+		ws.send( JSON.stringify(message) );
+		return true;
+	} else {
+		var message = new PP_Responses.PP_ErrorResponse('login', jira.get_message());
+	}
 };
 
 PP_Controller.prototype.do_refresh_all = function(ws, data) {
@@ -215,7 +235,6 @@ PP_Controller.prototype.do_leave_meeting = function(ws, data) {
 PP_Controller.prototype.do_set_bid = function(ws, data) {
 	var meeting = this._get_meeting_from_data(data, 'set_bid');
 	var player = this._get_player_from_data(data);
-	logger.log('got meeting');
 	meeting.set_bid(player, data.bid);
 
 	return true;
@@ -243,7 +262,6 @@ PP_Controller.prototype._get_meeting_from_data = function(data, action){
 }
 
 PP_Controller.prototype.send_message = function(ws, response) {
-	logger.log_o( response, 3 );
 	ws.send( JSON.stringify( response ) );
 };
 

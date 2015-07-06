@@ -2,7 +2,6 @@
 
 var PP_Jira = require('./pp_jira').PP_Jira;
 
-
 module.exports = {
 	/**
 	 * Generates an rfc4122 version 4 compliant globally unique identifier or guid
@@ -17,9 +16,9 @@ module.exports = {
 	},
 
 
-	login: function(username, password, callback){
+	login: function(username, password, callback, args){
 		var jira = new PP_Jira();
-		jira.authenticate(username, password, callback);
+		jira.authenticate(username, password, callback, args);
 	}
 
 };

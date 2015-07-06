@@ -101,7 +101,6 @@ PP_Meeting.prototype.set_ws_for_player = function(player, ws){
 };
 
 PP_Meeting.prototype.set_bid = function(player, bid, issue_id) {
-	logger.log('setting bid ' + bid + ' for player ' + player.get_id());
 	if( issue_id ){
 		if( !this._issue || issue_id !== this._issue.id ) {
 			throw new PP_Exception('issue has changed since bid made');
@@ -181,7 +180,6 @@ PP_Meeting.prototype.set_show_cards = function(player, show_cards) {
  * @param action string The action to return
  */
 PP_Meeting.prototype.update_all_with_status = function(success, action, notice){
-	logger.log('update_all_with_status for ' + action);
 	var resp = this._get_status_update_response();
 	if( notice ) {
 		resp.notice = notice;
@@ -202,8 +200,6 @@ PP_Meeting.prototype.update_all = function(success, action, data){
 	for( var player_id in this._players ) {
 		if( success ) {
 			if( this._host ){
-				logger.log(player_id);
-				logger.log(this._host);
 				data.you_are_host = (player_id === this._host);
 			}
 			data.your_bid = this._players[ player_id ].get_bid();
@@ -241,10 +237,7 @@ PP_Meeting.prototype.get_name = function() {
  * @returns {boolean|string}
  */
 PP_Meeting.prototype.get_host_name = function() {
-	logger.log('get_host_name');
-	logger.log(this._host);
 	if( this._host && this._players[ this._host ] ) {
-		logger.log('found host');
 		return this._players[ this._host ].get_name();
 	} else {
 		return false;
@@ -275,8 +268,6 @@ PP_Meeting.prototype._get_player = function(player_id) {
 	if( player_id && this._players[ player_id ] ) {
 		return this._players[ player_id ];
 	} else {
-		logger.log('player not found');
-		logger.log_o( this._players, 3 );
 		throw new PP_PlayerNotFoundException('Player is not part of this meeting');
 	}
 }
@@ -334,10 +325,7 @@ PP_Meeting.prototype._get_status_update_response = function(){
  */
 PP_Meeting.prototype._update = function(ws, success, action, player_id, data){
 	try{
-		logger.log('sending update for ' + player_id);
-
 		var message = new PP_SuccessResponse(action, data, player_id, this.get_id());
-		logger.log_o( message );
 		ws.send( JSON.stringify(message) );
 
 	}catch( e ) {
