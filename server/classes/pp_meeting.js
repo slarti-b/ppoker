@@ -174,17 +174,19 @@ PP_Meeting.prototype._post_set_issue_from_jira = function(error, response, body,
 	                          fields.summary,
 	                          jira.format_string_as_html( fields.description ),
 	                          jira.get_link_for_issue( body.key ) );
+	issue.extended_info = true;
 	if( fields.issuetype ){
 		issue.type_name = fields.issuetype.name;
 		issue.type_icon = fields.issuetype.iconUrl;
 	}
 	if( fields.parent && fields.parent.key ){
 		issue.parent_id = fields.parent.key;
-		issue.parent_name = fields.parent.summary;
-		if( fields.parent.issuetype ){
-			issue.parent_type = fields.parent.issuetype.name;
-			issue.parent_type_icon = fields.parent.issuetype.iconUrl;
+		issue.parent_name = fields.parent.fields.summary;
+		if( fields.parent.fields.issuetype ){
+			issue.parent_type = fields.parent.fields.issuetype.name;
+			issue.parent_type_icon = fields.parent.fields.issuetype.iconUrl;
 		}
+		issue.parent_link = jira.get_link_for_issue(issue.parent_id);
 	}
 	if( fields.project ){
 		issue.project_name = fields.project.name;
@@ -233,10 +235,13 @@ PP_Meeting.prototype._post_set_issue_from_jira = function(error, response, body,
 				links.push({
 					type: link_type,
 					id: link_data.key,
+					url: jira.get_link_for_issue(link_data.key),
 					name: link_data.fields.summary
 	            });
 			}
-
+		}
+		if( links.length ){
+			issue.links = links;
 		}
 	}
 	if( fields.subtasks ){
@@ -244,7 +249,7 @@ PP_Meeting.prototype._post_set_issue_from_jira = function(error, response, body,
 	} else {
 		issue.num_subtasks = 0;
 	}
-
+	logger.log_o(issue);
 	meeting._issue = issue;
 	meeting._new_issue_set();
 

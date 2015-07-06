@@ -22,6 +22,7 @@ function PP_Issue( id, name, description, link ) {
 	this.name = name;
 	this.link = link;
 	this.description = description;
+	this.extended_info = false;
 	this.type_name = false;
 	this.type_icon = false;
 	this.prio_id = false;
@@ -29,6 +30,7 @@ function PP_Issue( id, name, description, link ) {
 	this.prio_icon = false;
 	this.parent_id = false;
 	this.parent_name = false;
+	this.parent_link = false;
 	this.parent_type = false;
 	this.parent_type_icon = false;
 	this.attachments = false;
@@ -55,12 +57,7 @@ PP_Issue.prototype.set_jira_link_from_id = function() {
  * @returns {{id: exports.id, name: (*|exports.name), desc: *, link: *}}
  */
 PP_Issue.prototype.get_info_for_response = function() {
-	return {
-		id:   this.id,
-		name: this.name,
-		desc: this.description,
-		link: this.link
-	};
+	return this;
 }
 
 module.exports = {

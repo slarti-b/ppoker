@@ -128,8 +128,8 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 				$scope.meeting.host_name = data.data.host;
 				$scope.meeting.players = data.data.players;
 				$scope.meeting.issue = data.data.issue;
-				if( data.data.issue && data.data.issue.hasOwnProperty('desc') ){
-					$scope.meeting.issue.desc = $sce.trustAsHtml(data.data.issue.desc);
+				if( data.data.issue && data.data.issue.hasOwnProperty('description') ){
+					$scope.meeting.issue.description = $sce.trustAsHtml(data.data.issue.description);
 				}
 				$scope.meeting.show_cards = data.data.show_cards;
 				$scope.meeting.is_host = data.data.you_are_host ? true : false;
