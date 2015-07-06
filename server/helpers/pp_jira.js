@@ -6,6 +6,7 @@ var settings = require( '../settings' ).settings;
 var PP_Exceptions = require( './pp_exceptions');
 var PP_Logger = require( './pp_logger').PP_Logger;
 var logger = new PP_Logger;
+var Autolinker = require( 'autolinker' );
 
 /**
  * Class to interface with Jira
@@ -254,7 +255,7 @@ PP_Jira.prototype.get_issue = function(issue_id, data, callback, args){
 
 PP_Jira.prototype.format_string_as_html = function(str){
 	// Based on http://stackoverflow.com/a/14430759/209568
-	return str
+	var ret = str
 			.replace(/\r\n?/g,'\n') // normalise linebreaks
 			.replace(/(^((?!\n)\s)+|((?!\n)\s)+$)/gm,'') // trim each line
 			.replace(/(?!\n)\s+/g,' ') // reduce multiple spaces to 2 (like in "a    b")
@@ -272,6 +273,15 @@ PP_Jira.prototype.format_string_as_html = function(str){
 			.replace(/\n/g,'<br />') // replace single newline symbols with the <br /> entity
 			.replace(/^(.+?)$/,'<p>$1</p>'); // wrap all the string into <p> tags
 											// if there's at least 1 non-empty character
+
+
+	ret = Autolinker.link(ret, {
+		newWindow: true,
+		stripPrefix: false,
+		phone: false,
+		twitter: false
+	});
+	return ret;
 };
 
 

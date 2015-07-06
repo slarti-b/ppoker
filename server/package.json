@@ -16,7 +16,9 @@
   "repository": {
     "url": ""
   },
-  "dependencies": {},
+  "dependencies": {
+    "autolinker": "~0.18.1"
+  },
   "optionalDependencies": {},
   "engines": {
     "node": "*"
