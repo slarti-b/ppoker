@@ -60,7 +60,7 @@
 			<div class="issue-container" data-ng-if="meeting.issue">
 				<h2><a data-ng-href="{{meeting.issue.link}}" target="_blank"><span class="issue-id">{{meeting.issue.id}}</span> {{meeting.issue.name}}</a></h2>
 				<div class="issue-description">
-					{{meeting.issue.desc}}
+					<div data-ng-bind-html="meeting.issue.desc"></div>
 					<a class="issue-link" target="_blank" data-ng-href="{{meeting.issue.link}}">More info</a>
 				</div>
 			</div>

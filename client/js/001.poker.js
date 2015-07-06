@@ -117,7 +117,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		},
 
 		/* Update */
-		update_status: function($scope, data){
+		update_status: function($scope, data, $sce){
 			log_o( 'updating status', data );
 			log_o('before', $scope.meeting);
 			$scope.$apply(function(){
@@ -128,6 +128,9 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 				$scope.meeting.host_name = data.data.host;
 				$scope.meeting.players = data.data.players;
 				$scope.meeting.issue = data.data.issue;
+				if( data.data.issue && data.data.issue.hasOwnProperty('desc') ){
+					$scope.meeting.issue.desc = $sce.trustAsHtml(data.data.issue.desc);
+				}
 				$scope.meeting.show_cards = data.data.show_cards;
 				$scope.meeting.is_host = data.data.you_are_host ? true : false;
 				$scope.meeting.my_bid =  data.data.your_bid;
@@ -222,7 +225,12 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 
 
 
-	app.controller('AppController', ['$scope', '$localStorage', '$sessionStorage', '$websocket', function($scope, $localStorage, $sessionStorage, $websocket){
+	app.controller('AppController', ['$scope',
+	                                 '$localStorage',
+	                                 '$sessionStorage',
+	                                 '$websocket',
+	                                 '$sce',
+	                                 function($scope, $localStorage, $sessionStorage, $websocket, $sce){
 
 		var default_vals = {
 			pp_use_local: true,
@@ -247,7 +255,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		};
 
 		$scope.$on('pp_update_status', function(event, data){
-			base_controller.update_status($scope, data);
+			base_controller.update_status($scope, data, $sce);
 		});
 
 		$scope.meeting = base_controller.get_initial_status($scope);

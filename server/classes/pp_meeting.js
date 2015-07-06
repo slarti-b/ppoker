@@ -15,6 +15,7 @@ var PP_Issue = require( './pp_issue' ).PP_Issue;
 var PP_Logger = require( '../helpers/pp_logger').PP_Logger;
 var logger = new PP_Logger
 var PP_Auth = require( '../helpers/pp_auth');
+var PP_Jira = require( '../helpers/pp_jira').PP_Jira;
 
 
 	/**
@@ -149,9 +150,104 @@ PP_Meeting.prototype.set_issue_with_jira_link = function( player, id, name, desc
  */
 PP_Meeting.prototype.set_issue_from_jira = function( player, id ) {
 	this._check_if_host(player.get_id());
-	this._issue = new PP_Issue();
-	this._issue.set_from_jira(id);
-	this._new_issue_set();
+	var jira = new PP_Jira();
+	var data = {
+		fields: 'issuetype,parent,project,priority,issuelinks,status,components,description,attachment,summary,reporter,subtasks'
+	};
+	var args = {
+		player: player,
+		issue_id: id,
+		meeting: this
+	};
+	jira.get_issue(id, data, this._post_set_issue_from_jira, args);
+};
+
+PP_Meeting.prototype._post_set_issue_from_jira = function(error, response, body, jira){
+	logger.log('_post_set_issue_from_jira');
+	logger.log_o(jira.get_callback_args(), 2);
+	logger.log_o(body);
+	var args = jira.get_callback_args();
+	var player = args.player;
+	var meeting = args.meeting;
+	var fields = body.fields;
+	var issue = new PP_Issue( body.key,
+	                          fields.summary,
+	                          jira.format_string_as_html( fields.description ),
+	                          jira.get_link_for_issue( body.key ) );
+	if( fields.issuetype ){
+		issue.type_name = fields.issuetype.name;
+		issue.type_icon = fields.issuetype.iconUrl;
+	}
+	if( fields.parent && fields.parent.key ){
+		issue.parent_id = fields.parent.key;
+		issue.parent_name = fields.parent.summary;
+		if( fields.parent.issuetype ){
+			issue.parent_type = fields.parent.issuetype.name;
+			issue.parent_type_icon = fields.parent.issuetype.iconUrl;
+		}
+	}
+	if( fields.project ){
+		issue.project_name = fields.project.name;
+	}
+	if( fields.priority ){
+		issue.prio_id = fields.priority.id;
+		issue.prio_name = fields.priority.name;
+		issue.prio_icon = fields.priority.iconUrl;
+	}
+	if( fields.status ){
+		issue.status_name = fields.status.name;
+		issue.status_icon = fields.status.iconUrl;
+	}
+	if( fields.reporter ){
+		issue.reporter_name = fields.reporter.displayName;
+	}
+
+	if( fields.attachment ){
+		var attachments = [];
+		for( var i in fields.attachment ){
+			attachments.push({
+                name: fields.attachment[ i ].filename,
+				url: fields.attachment[ i ].content,
+                thumbnail: fields.attachment[ i ].thumbnail
+            });
+		}
+		if( attachments.length ){
+			issue.attachments = attachments;
+		}
+	}
+
+	if( fields.issuelinks ){
+		var links = [];
+		for( var i in fields.issuelinks ){
+			var link = fields.issuelinks[ i ];
+			var link_type = false;
+			var link_data = false;
+			if( link.outwardIssue ){
+				link_type = link.type.outward;
+				link_data = link.outwardIssue;
+			} else if( link.inwardIssue ) {
+				link_type = link.type.inward;
+				link_data = link.inwardIssue;
+			}
+			if( link_data ){
+				links.push({
+					type: link_type,
+					id: link_data.key,
+					name: link_data.fields.summary
+	            });
+			}
+
+		}
+	}
+	if( fields.subtasks ){
+		issue.num_subtasks = fields.subtasks.length;
+	} else {
+		issue.num_subtasks = 0;
+	}
+
+	meeting._issue = issue;
+	meeting._new_issue_set();
+
 };
 
 /**

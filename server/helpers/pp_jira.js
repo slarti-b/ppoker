@@ -110,6 +110,10 @@ PP_Jira.prototype.get_message = function(){
 	return this._message;
 };
 
+PP_Jira.prototype.get_callback_args = function(){
+	return this._callback_args;
+}
+
 /**
  * Gets the URL for linking to a Jira issue
  *
@@ -129,7 +133,9 @@ PP_Jira.prototype.get_jira_link_url = function(issue_id){
  * @param callback function Callback function to process data
  * @private
  */
-PP_Jira.prototype._get = function(service, data, callback, username, password) {
+PP_Jira.prototype._get = function(service, data, callback, username, password, args) {
+	this._callback_args = args;
+
 	// Options for request
 	var opts = {
 		url: '/' + service,
@@ -182,10 +188,9 @@ PP_Jira.prototype._get = function(service, data, callback, username, password) {
 PP_Jira.prototype.authenticate = function(username, password, callback, args){
 	this._post_callback_callback = callback;
 	this._username = username;
-	this._callback_args = args;
 
 	// Run request
-	this._get( 'myself', false, this._authentication_callback, username, password);
+	this._get( 'myself', false, this._authentication_callback, username, password, args);
 };
 
 /**
@@ -230,7 +235,7 @@ PP_Jira.prototype._authentication_callback = function(error, response, body, jir
 	}
 
 	if( typeof jira._post_callback_callback === 'function' ) {
-		jira._post_callback_callback(jira, body, jira._callback_args);
+		jira._post_callback_callback(jira, body, jira.get_callback_args());
 		jira._post_callback_callback = false;
 	}
 };
@@ -243,9 +248,32 @@ PP_Jira.prototype._authentication_callback = function(error, response, body, jir
  * @param password string Password for authentication
  * @param callback function Callback function to process data
  */
-PP_Jira.prototype.get_issue = function(issue_id, data, callback){
-	this._get('issue/' + issue_id, data, callback, false, false);
+PP_Jira.prototype.get_issue = function(issue_id, data, callback, args){
+	this._get('issue/' + issue_id, data, callback, false, false, args);
 };
+
+PP_Jira.prototype.format_string_as_html = function(str){
+	// Based on http://stackoverflow.com/a/14430759/209568
+	return str
+			.replace(/\r\n?/g,'\n') // normalise linebreaks
+			.replace(/(^((?!\n)\s)+|((?!\n)\s)+$)/gm,'') // trim each line
+			.replace(/(?!\n)\s+/g,' ') // reduce multiple spaces to 2 (like in "a    b")
+			.replace(/^\n+|\n+$/g,'') // trim the whole string
+			.replace(/[<>&"']/g,function(a) { // replace these signs with encoded versions
+			         switch (a) {
+				         case '<'    : return '&lt;';
+				         case '>'    : return '&gt;';
+				         case '&'    : return '&amp;';
+				         case '"'    : return '&quot;';
+				         case '\''   : return '&apos;';
+			         }
+            })
+            .replace(/\n{2,}/g,'</p><p>') // replace 2 or more consecutive empty lines with end/start p
+			.replace(/\n/g,'<br />') // replace single newline symbols with the <br /> entity
+			.replace(/^(.+?)$/,'<p>$1</p>'); // wrap all the string into <p> tags
+											// if there's at least 1 non-empty character
+};
+
 
 /**
  * Gets a link to the specified issue in Jira

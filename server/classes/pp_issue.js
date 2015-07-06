@@ -7,7 +7,6 @@ var settings = require( '../settings' ).settings;
 var PP_Logger = require( '../helpers/pp_logger').PP_Logger;
 var logger = new PP_Logger
 var PP_Jira = require( '../helpers/pp_jira').PP_Jira;
-var jira = new PP_Jira();
 
 
 /**
@@ -23,25 +22,31 @@ function PP_Issue( id, name, description, link ) {
 	this.name = name;
 	this.link = link;
 	this.description = description;
+	this.type_name = false;
+	this.type_icon = false;
+	this.prio_id = false;
+	this.prio_name = false;
+	this.prio_icon = false;
+	this.parent_id = false;
+	this.parent_name = false;
+	this.parent_type = false;
+	this.parent_type_icon = false;
+	this.attachments = false;
+	this.project_name = false;
+	this.reporter_name = false;
+	this.links = false;
+	this.status_name = false;
+	this.status_icon = false;
+	this.custom_fields = false;
+	this.num_subtasks = false;
 }
 
 /**
  * Sets the link based on the id and the global setting for the Jira link url
  */
 PP_Issue.prototype.set_jira_link_from_id = function() {
+	var jira = new PP_Jira();
 	this.link = jira.get_jira_link_url(this.id);
-};
-
-/**
- * Sets the _issue fetching all info from Jira
- * @param id string The ID of the _issue
- */
-PP_Issue.prototype.set_from_jira = function( id ) {
-	this.id = id;
-	// TODO: Implement fetch from Jira
-	this.name = 'Jira PP_Issue ' + id;
-	this.description = '';
-	this.set_jira_link_from_id();
 };
 
 /**
