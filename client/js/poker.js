@@ -1,5 +1,7 @@
 "use strict";
 
+// @@include('inc/options.js')
+
 function log(message){
 	console && console.log && console.log(message);
 }
@@ -308,6 +310,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 })(app, options);
 
 
-
-
-
+// @@include('inc/menu.js')
+// @@include('inc/login.js')
+// @@include('inc/bid.js')
+// @@include('inc/issue.js')

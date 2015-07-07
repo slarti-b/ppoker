@@ -35,9 +35,9 @@ server/settings.js
 client/js/000.options.js
 
 # Generated files
-client/index.html
-client/poker.js
-client/poker.css
 *.css.map
 *.js.map
 *.html.map
+/client/dist/index.html
+/client/dist/poker.js
+/client/dist/poker.css

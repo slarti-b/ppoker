@@ -1,0 +1,6 @@
+<div class="bid-board" data-ng-controller="BidController as bids" data-ng-if="meeting.issue">
+	<h3>Make Bid</h3>
+	<ul class="possible-bids">
+		<li data-ng-repeat="bid in bids.possible_bids" data-ng-class="{chosen: bid.value == meeting.my_bid}" data-ng-click="bids.make_bid($event, bid.value)"><span  class="card">{{bid.text}}</span></li>
+	</ul>
+</div>

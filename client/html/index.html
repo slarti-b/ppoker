@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html data-ng-app="pokerApp">
+<head>
+	<meta charset="utf-8" />
+	<link rel="stylesheet" href="poker.css" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body data-ng-controller="AppController as app">
+	<div id="app-loading-container" class="ng-cloak">
+		<div id="app-loading-message">App is loading</div>
+	</div>
+
+	<div id="app-container" class="ng-cloak">
+		<div data-ng-if="user.logged_in">
+			// @@include('inc/menu.html')
+
+			// @@include('inc/meetings_chooser.html')
+
+			<div class="page-container meeting-container" data-ng-if="meeting.meeting_id">
+				<div class="meeting-head">
+					<h3>{{meeting.meeting_name}}</h3>
+					<h4>Hosted by {{meeting.host_name}}</h4>
+				</div>
+
+				// @@include('inc/set_issue.html')
+
+				<div class="meeting-board-container" data-ng-show="show_main_board()">
+					// @@include('inc/issue_container.html')
+
+					// @@include('inc/meeting_board.html')
+
+					// @@include('inc/bid_board.html')
+
+					<div data-ng-if="!meeting.issue">
+						Waiting for issue
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+		<div class="page-container" data-ng-if="!user.logged_in">
+			// @@include('inc/login.html')
+		</div>
+
+	</div>
+
+	<script type="text/javascript" src="jslibs/angular.min.js"></script>
+	<script type="text/javascript" src="jslibs/ngStorage.js"></script>
+	<script type="text/javascript" src="jslibs/ng-websocket.js"></script>
+	<script type="text/javascript" src="poker.js"></script>
+
+	// @@include('inc/livereload.html', {"dev_only": true})
+</body>
+</html>

@@ -1,0 +1,9 @@
+<div class="meeting-board" data-ng-class="{'hide-cards': !meeting.show_cards, 'show-cards': meeting.show_cards} ">
+	<h3>Current Bids</h3>
+	<div data-ng-repeat="player in meeting.players" class="player" data-ng-class="{'has-bid': player.bid}">
+		<div class="card">
+			<h2 class="card-value" data-ng-if="meeting.show_cards">{{false === player.bid ? '' : player.bid}}</h2>
+		</div>
+		<h5>{{player.name}}</h5>
+	</div>
+</div>

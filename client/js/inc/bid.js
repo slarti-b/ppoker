@@ -1,5 +1,6 @@
 "use strict";
 
+
 (function(app, options) {
 	var bid_controller = {
 		possible_bids: [

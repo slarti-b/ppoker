@@ -1,0 +1,6 @@
+<nav class="main-menu" data-ng-controller="MenuController as menus">
+				<span class="menu-item" data-ng-repeat="menu in menus.menu_items" data-ng-hide="menu.hide" data-ng-click="menus.onclick($event, menu)" data-ng-class="{disabled:menu.disabled}">
+					{{menu.text}}
+				</span>
+</nav>
+<p>You are playing as {{user.name}}</p>

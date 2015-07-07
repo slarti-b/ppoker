@@ -1,0 +1,9 @@
+<div class="page-container" data-ng-if="!meeting.meeting_id">
+	<ul class="meetings-chooser">
+		<li data-ng-repeat="meet in meetings_list" class="button" data-ng-click="app.join_meeting(meet.id)">{{meet.name}} hosted by {{meet.host}}</li>
+	</ul>
+	<form data-ng-submit="app.create_meeting()">
+		<input data-ng-model="action_data.meeting_name" type="text" required />
+		<button type="submit">Create Meeting</button>
+	</form>
+</div>

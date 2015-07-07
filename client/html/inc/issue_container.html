@@ -1,0 +1,23 @@
+<div class="issue-container" data-ng-if="meeting.issue">
+	<h2><a data-ng-href="{{meeting.issue.link}}" target="_blank"><span class="issue-id">{{meeting.issue.id}}</span> {{meeting.issue.name}}</a></h2>
+	<p data-ng-if="meeting.issue.parent_id">Parent: <a href="{{meeting.issue.parent_link}}">{{meeting.issue.parent_id}} {{meeting.issue.parent_name}}</a></p>
+	<p class="issue-info">
+		<span class="reporter">Reported by {{meeting.issue.reporter_name}}.</span>
+		<span class="project">Project: {{meeting.issue.project_name}}</span>
+		<span class="subtasks" data-ng-show="meeting.issue.num_subtasks">Has {{meeting.issue.num_subtasks}} subtasks</span>
+	</p>
+	<p class="issue-links" data-ng-show="meeting.issue.links">
+						<span class="issue-link" data-ng-repeat="link in meeting.issue.links">
+							This issue {{link.type}} <a href="{{link.url}}" target="_blank">{{link.id}} {{link.name}}</a>
+						</span>
+	</p>
+	<div class="issue-description">
+		<div data-ng-bind-html="meeting.issue.description"></div>
+		<a class="issue-link" target="_blank" data-ng-href="{{meeting.issue.link}}">More info</a>
+	</div>
+	<div class="issue-attachments" data-ng-show="meeting.issue.attachments">
+		<a class="issue-attachment" data-ng-repeat="attachment in meeting.issue.attachments" href="{{attachment.url}}" target="_blank">
+			<img alt="{{attachment.name}}" src="{{attachment.thumbnail}}" />
+		</a>
+	</div>
+</div>
