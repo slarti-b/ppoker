@@ -58,6 +58,8 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 
 	var base_controller = {
 
+		jira_icons: {},
+
 		/* WebSocket Handling */
 		ws_create_connection: function($websocket){
 			return $websocket.$new({
@@ -97,6 +99,9 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 							break;
 						case 'login':
 							$scope.post_login(data);
+							break;
+						case 'update_jira_icons':
+							base_controller.update_jira_icons($scope, data.data);
 							break;
 					}
 				}
@@ -175,8 +180,6 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		},
 
 		update_meetings_list: function($scope, data){
-			log_o('Updating meetings', data.data);
-			log_o('meetings_list', $scope.meetings_list);
 			$scope.$apply(function(){
 				$scope.meetings_list = [];
 				console.log('data.data: %o', data.data);
@@ -185,7 +188,19 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 					$scope.meetings_list.push( data.data[i] );
 				}
 			});
-			log_o('meetings_list', $scope.meetings_list);
+		},
+
+		update_jira_icons: function($scope, data){
+			this.jira_icons = data;
+		},
+
+		get_issue_type_icon: function(id){
+			if( id && angular.isObject(base_controller.jira_icons) && angular.isObject(base_controller.jira_icons.issue_types) ){
+				if( angular.isObject(base_controller.jira_icons.issue_types[id]) && base_controller.jira_icons.issue_types[id].icon ){
+					return 'data:' + base_controller.jira_icons.issue_types[id].mime_type + ';base64,' + base_controller.jira_icons.issue_types[id].icon;
+				}
+			}
+			return '';
 		},
 
 		get_initial_status: function($scope) {
@@ -302,7 +317,9 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 
 		$scope.set_main_board_view = function(){
 			$scope.meeting.board_view ='main_board';
-		}
+		};
+
+        $scope.get_issue_type_icon = base_controller.get_issue_type_icon;
 
 
 

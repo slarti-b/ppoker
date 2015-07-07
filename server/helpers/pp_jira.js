@@ -37,7 +37,7 @@ function PP_Jira(){
 	 * @type {request}
 	 * @private
 	 */
-	this._request = require('request').defaults({
+	this._request = require( 'request' ).defaults({
 		json: true,
         jar: true
     });
@@ -190,7 +190,8 @@ PP_Jira.prototype._get_request_opts = function(method, service, username, passwo
 PP_Jira.prototype._run_request = function(opts, username, callback, args){
 	// Save args for callback
 	this._callback_args = args;
-
+	logger.log('running request');
+	logger.log_o(opts);
 	// Save this as a variable then wrap callback in an anonymous function in order to add the jira param
 	var jira = this;
 
@@ -202,6 +203,9 @@ PP_Jira.prototype._run_request = function(opts, username, callback, args){
 	this._request_in_progress = true;
 	this._message = '';
 	this._request(opts, function(error, response, body){
+		logger.log('response');
+		logger.log_o(jira._get_response_code(response));
+		logger.log(response.headers);
 		// If we have a username assume we are logging in.  In this case the authentication routine handles the response
 		// Otherwise fail if 401 returned
 		if( !username && response.statusCode === 401 ){
@@ -293,7 +297,7 @@ PP_Jira.prototype.authenticate = function(username, password, callback, args){
 PP_Jira.prototype._authentication_callback = function(error, response, body, jira){
 	jira._logged_in = false;
 	jira._dispname = '';
-	if( response && response instanceof Object && response.hasOwnProperty('statusCode') ) {
+	if( jira._get_response_code(response) ) {
 		switch( response.statusCode ){
 			case 200:
 				if( body.active ){
@@ -325,6 +329,14 @@ PP_Jira.prototype._authentication_callback = function(error, response, body, jir
 	}
 };
 
+PP_Jira.prototype._get_response_code = function(response){
+	if( response && response instanceof Object && response.hasOwnProperty('statusCode') ) {
+		return response.statusCode;
+	} else {
+		return false;
+	}
+};
+
 /**
  * Gets info on an issue
  *
@@ -335,6 +347,62 @@ PP_Jira.prototype._authentication_callback = function(error, response, body, jir
  */
 PP_Jira.prototype.get_issue = function(issue_id, data, callback, args){
 	this._get('issue/' + issue_id, data, callback, false, false, args);
+};
+
+PP_Jira.prototype.get_issue_types = function(callback, args){
+	logger.log('called get_issue_types');
+	this._get('issuetype', false, this._got_issue_types, false, false, {callback: callback, args: args});
+};
+
+PP_Jira.prototype._got_issue_types = function( error, response, body, jira ){
+	logger.log('_got_issue_types');
+	logger.log_o( jira._get_response_code(response) );
+	logger.log_o(body, 2);
+	if( jira._get_response_code(response) && 200 == jira._get_response_code(response) ){
+		var args = jira.get_callback_args();
+		for( var i in body ){
+			logger.log( 'setting ' + body[ i ].id + ' false' );
+			args.args.controller.icons.issue_types[  body[ i ].id ] = false;
+		}
+		for( var i in body ){
+			var bin_args = {
+				issue_id: body[ i ].id,
+				issue_name: body[ i ].name,
+				args: args
+			};
+			jira.get_binary_data( body[i].iconUrl, jira._got_issue_type, bin_args);
+		}
+	}
+};
+
+
+PP_Jira.prototype._got_issue_type = function( error, response, body, jira, args ){
+	logger.log('called _got_issue_type ');
+	logger.log_o( jira._get_response_code(response) );
+	logger.log_o( args, 2 );
+	if( jira._get_response_code(response) && 200 == jira._get_response_code(response) && args && args.args) {
+		var ws = args.args.args.ws;
+		var controller = args.args.args.controller;
+		controller.icons.issue_types[args.issue_id] = {
+			name: args.issue_name,
+			icon: new Buffer(body ).toString('base64'),
+			mime_type : response.headers["content-type"]
+		};
+		logger.log_o(controller.icons.issue_types);
+		args.args.callback.call(this, args.args.args);
+	}
+};
+
+PP_Jira.prototype.get_binary_data = function(url, callback, args){
+	logger.log('called get_binary_data for ' + url);
+	var jira = this;
+	var bin_req = this._request({
+        encoding: null,
+		url: url,
+		method: 'GET'
+    }, function(error, response, body){
+		callback.call(this, error, response, body, jira, args);
+	});
 };
 
 PP_Jira.prototype.format_string_as_html = function(str){

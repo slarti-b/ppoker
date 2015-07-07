@@ -24,10 +24,9 @@ function PP_Issue( id, name, description, link ) {
 	this.description = description;
 	this.extended_info = false;
 	this.type_name = false;
-	this.type_icon = false;
+	this.type_id = false;
 	this.prio_id = false;
 	this.prio_name = false;
-	this.prio_icon = false;
 	this.parent_id = false;
 	this.parent_name = false;
 	this.parent_link = false;
@@ -41,6 +40,7 @@ function PP_Issue( id, name, description, link ) {
 	this.status_icon = false;
 	this.custom_fields = false;
 	this.num_subtasks = false;
+	this.num_comments = false;
 }
 
 /**

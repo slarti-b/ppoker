@@ -15,6 +15,7 @@ var PP_Player = require( './classes/pp_player').PP_Player;
 var PP_Logger = require( './helpers/pp_logger').PP_Logger;
 var logger = new PP_Logger;
 var PP_Auth = require( './helpers/pp_auth');
+var PP_Jira = require( './helpers/pp_jira').PP_Jira;
 
 // Get config
 var settings = require( './settings' ).settings;
@@ -29,6 +30,14 @@ function PP_Controller(wss){
 	this._meetings = {};
 	this.all_clients = wss.clients;
 	this._players = {};
+	this.icons = {
+		issue_types: {
+
+		},
+		prios: {
+
+		}
+	};
 }
 
 PP_Controller.prototype.do_connect = function(ws, data){
@@ -56,11 +65,11 @@ PP_Controller.prototype.do_connect = function(ws, data){
 PP_Controller.prototype.do_logout = function(ws, data){
 	var player = this._get_player_from_data(data);
 	for( var m in this._meetings ){
-		if( this._meetings[m ].has_player(player.get_id()) ){
-			if( this._meetings[m ].is_host(player) ){
-				this._meetings[m ].end(player);
+		if( this._meetings[ m ].has_player(player.get_id()) ){
+			if( this._meetings[ m ].is_host(player) ){
+				this._meetings[ m ].end(player);
 			} else {
-				this._meetings[m ].leave(player);
+				this._meetings[ m ].leave(player);
 			}
 		}
 	}
@@ -92,6 +101,37 @@ PP_Controller.prototype.do_login = function(ws, data) {
 	}
 };
 
+PP_Controller.prototype.do_get_icons = function(ws, data){
+	logger.log('called do_get_icons');
+	var jira = new PP_Jira;
+	jira.get_issue_types(this._got_icons, {controller: this, ws: ws});
+};
+
+PP_Controller.prototype._got_icons = function(args){
+	logger.log('called _got_icons');
+	logger.log_o(args, 1);
+	var controller = args.controller;
+	/**
+	 * @type controller PP_Controller
+	 */
+	logger.log_o(controller.icons.issue_types );
+	if( controller.icons.issue_types ){
+		var found_all = true;
+		for( var id in controller.icons.issue_types ){
+			if( ! controller.icons.issue_types[id] ){
+				found_all = false;
+				break;
+			}
+		}
+		logger.log('found_all');
+		logger.log_o(found_all);
+		logger.log_o(controller.icons.issue_types);
+		if( found_all ){
+			controller.broadcast( new PP_SuccessResponse('update_jira_icons', controller.icons) );
+		}
+	}
+};
+
 /**
  *
  * @param jira {PP_Jira}
@@ -113,6 +153,8 @@ PP_Controller.prototype._post_login = function(jira, body, args){
 		};
 		var message = new PP_SuccessResponse('login', data, player.get_id(), null);
 		ws.send( JSON.stringify(message) );
+		logger.log('calling do_get_icons');
+		controller.do_get_icons(ws, {});
 		return true;
 	} else {
 		var message = new PP_Responses.PP_ErrorResponse('login', jira.get_message());

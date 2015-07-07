@@ -1,5 +1,5 @@
 <div class="issue-container" data-ng-if="meeting.issue">
-	<h2><a data-ng-href="{{meeting.issue.link}}" target="_blank"><span class="issue-id">{{meeting.issue.id}}</span> {{meeting.issue.name}}</a></h2>
+	<h2><img data-ng-src="{{get_issue_type_icon(meeting.issue.type_id)}}" alt="{{meeting.issue.type_name}}" /><a data-ng-href="{{meeting.issue.link}}" target="_blank"><span class="issue-id">{{meeting.issue.id}}</span> {{meeting.issue.name}}</a></h2>
 	<p data-ng-if="meeting.issue.parent_id">Parent: <a href="{{meeting.issue.parent_link}}">{{meeting.issue.parent_id}} {{meeting.issue.parent_name}}</a></p>
 	<p class="issue-info">
 		<span class="reporter">Reported by {{meeting.issue.reporter_name}}.</span>
