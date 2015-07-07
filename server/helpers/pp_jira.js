@@ -25,12 +25,6 @@ function PP_Jira(){
 		this._jira_base_url += '/';
 	}
 
-	this._jira_cookie_base_info = {
-		domain: settings.jira_domain,
-		path: settings.jira_path,
-		secure: 'https' === settings.jira_protocol
-	};
-
 	/**
 	 * Base URL for links to Jira tasks
 	 * @type {string}
@@ -87,26 +81,8 @@ function PP_Jira(){
 	 */
 	this._logged_in = false;
 
-	/**
-	 * Session cookie info
-	 * @type {boolean|{}}
-	 * @private
-	 */
-	this._session_cookie_info = false;
 }
 
-PP_Jira.prototype.get_session_cookie_info = function(){
-	if( this._session_cookie_info ){
-		var ret = {};
-		for( var k in this._jira_cookie_base_info ){
-			ret[k] = this._jira_cookie_base_info[k];
-		}
-		ret.cookies = this._session_cookie_info;
-		return ret;
-	} else {
-		return false;
-	}
-}
 /**
  * Base URL for rest api requests
  * @returns {string}
@@ -298,12 +274,8 @@ PP_Jira.prototype.authenticate = function(username, password, callback, args){
 	this._post_callback_callback = callback;
 	this._username = username;
 
-	var data = {
-		"username": username,
-		"password": password
-	};
 	// Run request
-	this._post( 'session', data, this._authentication_callback, username, password, args, true);
+	this._get( 'myself', false, this._authentication_callback, username, password, args);
 };
 
 /**
@@ -319,27 +291,8 @@ PP_Jira.prototype.authenticate = function(username, password, callback, args){
  * @private
  */
 PP_Jira.prototype._authentication_callback = function(error, response, body, jira){
-	logger.log('_authentication_callback');
-	logger.log_o(body);
-	logger.log_o(response.headers);
-	logger.log('response code: ' + (response ? response.statusCode: 'null'));
-
-	if( response && response instanceof Object && response.hasOwnProperty('statusCode') && body && body.session instanceof Object && 200 ==  response.statusCode ) {
-		logger.log('setting cookie info');
-		jira._session_cookie_info = response.headers['set-cookie'];
-	} else {
-		logger.log('NOT setting cookie info');
-		jira._session_cookie_info = false;
-	}
-
-	// Run request
-	jira._get( 'myself', false, jira._post_auth_info_callback, false, false, jira.get_callback_args());
-};
-
-PP_Jira.prototype._post_auth_info_callback = function(error, response, body, jira){
 	jira._logged_in = false;
 	jira._dispname = '';
-	logger.log_o(response.headers);
 	if( response && response instanceof Object && response.hasOwnProperty('statusCode') ) {
 		switch( response.statusCode ){
 			case 200:
