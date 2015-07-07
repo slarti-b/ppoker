@@ -227,10 +227,9 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 
 	app.controller('AppController', ['$scope',
 	                                 '$localStorage',
-	                                 '$sessionStorage',
 	                                 '$websocket',
 	                                 '$sce',
-	                                 function($scope, $localStorage, $sessionStorage, $websocket, $sce){
+	                                 function($scope, $localStorage, $websocket, $sce){
 
 		var default_vals = {
 			pp_use_local: true,
