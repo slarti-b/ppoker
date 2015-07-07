@@ -19,11 +19,18 @@ function PP_Jira(){
 	 * @type {string}
 	 * @private
 	 */
-	this._jira_base_url = '' + settings.jira_url;
+	this._jira_base_url = '' + settings.jira_protocol + '://' + settings.jira_domain + settings.jira_path;
 	// Ensure ends in slash
 	if( this._jira_base_url.slice(-1) !== '/' ){
 		this._jira_base_url += '/';
 	}
+
+	this._jira_cookie_base_info = {
+		domain: settings.jira_domain,
+		path: settings.jira_path,
+		secure: 'https' === settings.jira_protocol
+	};
+
 	/**
 	 * Base URL for links to Jira tasks
 	 * @type {string}
@@ -37,7 +44,6 @@ function PP_Jira(){
 	 * @private
 	 */
 	this._request = require('request').defaults({
-		baseUrl: this._jira_base_url + 'rest/api/2/',
 		json: true,
         jar: true
     });
@@ -80,7 +86,44 @@ function PP_Jira(){
 	 * @private
 	 */
 	this._logged_in = false;
+
+	/**
+	 * Session cookie info
+	 * @type {boolean|{}}
+	 * @private
+	 */
+	this._session_cookie_info = false;
 }
+
+PP_Jira.prototype.get_session_cookie_info = function(){
+	if( this._session_cookie_info ){
+		var ret = {};
+		for( var k in this._jira_cookie_base_info ){
+			ret[k] = this._jira_cookie_base_info[k];
+		}
+		ret.cookies = this._session_cookie_info;
+		return ret;
+	} else {
+		return false;
+	}
+}
+/**
+ * Base URL for rest api requests
+ * @returns {string}
+ * @private
+ */
+PP_Jira.prototype._get_rest_base_url = function(){
+	return this._jira_base_url + 'rest/api/2/';
+};
+
+/**
+ * Base URL for auth api requests
+ * @returns {string}
+ * @private
+ */
+PP_Jira.prototype._get_auth_base_url = function(){
+	return this._jira_base_url + 'rest/auth/1/';
+};
 
 /**
  * Get the username of the currently logged in user
@@ -125,27 +168,26 @@ PP_Jira.prototype.get_jira_link_url = function(issue_id){
 };
 
 /**
- * Internal function to make get requests
+ * Gets the main parts of the options for a request
  *
- * @param service string The service to call (url fragment)
- * @param data object Data to append as query string
+ * @param method string HTTP method to use
+ * @param service string Service to call
  * @param username string Username for authentication
  * @param password string Password for authentication
- * @param callback function Callback function to process data
+ * @param use_auth_uri boolean If true then the auth api is called, otherwise the rest api is called
+ * @returns {{url: string, method: *}}
  * @private
  */
-PP_Jira.prototype._get = function(service, data, callback, username, password, args) {
-	this._callback_args = args;
-
+PP_Jira.prototype._get_request_opts = function(method, service, username, password, use_auth_uri){
 	// Options for request
 	var opts = {
-		url: '/' + service,
-		method: 'GET'
+		method: method
 	};
 
-	// If we have data add to the request
-	if( data ) {
-		opts.qs = data;
+	if( true === use_auth_uri ) {
+		opts.url = this._get_auth_base_url() + service;
+	} else {
+		opts.url = this._get_rest_base_url() + service;
 	}
 
 	// If we have a username then log in.  Otherwise assume a session
@@ -156,6 +198,22 @@ PP_Jira.prototype._get = function(service, data, callback, username, password, a
 			'sendImmediately': true
 		};
 	}
+
+	return opts;
+};
+
+/**
+ * Internal function which runs actual request
+ *
+ * @param opts {} The options to pass to the request
+ * @param username  * @param username string Username for authentication
+ * @param callback function Callback function to process data
+ * @param args {} Extra arguments to pass to the callback
+ * @private
+ */
+PP_Jira.prototype._run_request = function(opts, username, callback, args){
+	// Save args for callback
+	this._callback_args = args;
 
 	// Save this as a variable then wrap callback in an anonymous function in order to add the jira param
 	var jira = this;
@@ -178,6 +236,56 @@ PP_Jira.prototype._get = function(service, data, callback, username, password, a
 		// Call callback
 		callback.call(this, error, response, body, jira);
 	});
+
+};
+/**
+ * Internal function to make GET requests
+ *
+ * @param service string The service to call (url fragment)
+ * @param data object Data to append as query string
+ * @param username string Username for authentication
+ * @param password string Password for authentication
+ * @param callback function Callback function to process data
+ * @param args {} Extra arguments to pass to the callback
+ * @private
+ */
+PP_Jira.prototype._get = function(service, data, callback, username, password, args) {
+
+	// Options for request
+	var opts = this._get_request_opts('GET', service, username, password);
+
+	// If we have data add to the request
+	if( data ) {
+		opts.qs = data;
+	}
+
+	this._run_request(opts, username, callback, args);
+};
+
+/**
+ * Internal function to make POST requests
+ *
+ * @param service string The service to call (url fragment)
+ * @param data object Data to append as query string
+ * @param username string Username for authentication
+ * @param password string Password for authentication
+ * @param callback function Callback function to process data
+ * @param args {} Extra arguments to pass to the callback
+ * @param use_auth_uri boolean If true then the auth api is called, otherwise the rest api is called
+ * @private
+ */
+PP_Jira.prototype._post = function(service, data, callback, username, password, args, use_auth_uri) {
+
+	// Options for request
+	var opts = this._get_request_opts('POST', service, username, password, use_auth_uri);
+
+	if( data ){
+		opts.body = data;
+	}
+
+	//logger.log_o(opts);
+
+	this._run_request(opts, username, callback, args);
 };
 
 /**
@@ -190,8 +298,12 @@ PP_Jira.prototype.authenticate = function(username, password, callback, args){
 	this._post_callback_callback = callback;
 	this._username = username;
 
+	var data = {
+		"username": username,
+		"password": password
+	};
 	// Run request
-	this._get( 'myself', false, this._authentication_callback, username, password, args);
+	this._post( 'session', data, this._authentication_callback, username, password, args, true);
 };
 
 /**
@@ -207,8 +319,27 @@ PP_Jira.prototype.authenticate = function(username, password, callback, args){
  * @private
  */
 PP_Jira.prototype._authentication_callback = function(error, response, body, jira){
+	logger.log('_authentication_callback');
+	logger.log_o(body);
+	logger.log_o(response.headers);
+	logger.log('response code: ' + (response ? response.statusCode: 'null'));
+
+	if( response && response instanceof Object && response.hasOwnProperty('statusCode') && body && body.session instanceof Object && 200 ==  response.statusCode ) {
+		logger.log('setting cookie info');
+		jira._session_cookie_info = response.headers['set-cookie'];
+	} else {
+		logger.log('NOT setting cookie info');
+		jira._session_cookie_info = false;
+	}
+
+	// Run request
+	jira._get( 'myself', false, jira._post_auth_info_callback, false, false, jira.get_callback_args());
+};
+
+PP_Jira.prototype._post_auth_info_callback = function(error, response, body, jira){
 	jira._logged_in = false;
 	jira._dispname = '';
+	logger.log_o(response.headers);
 	if( response && response instanceof Object && response.hasOwnProperty('statusCode') ) {
 		switch( response.statusCode ){
 			case 200:

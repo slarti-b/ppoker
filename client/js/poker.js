@@ -163,6 +163,13 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 					$scope.user.authenticated = data.data.authenticated_user;
 					$scope.user.name = data.data.player_dispname;
 					$scope.user.avatar = data.data.avatar;
+
+					if( data.data.session_cookie && data.data.session_cookie.cookies ){
+						var cookie = data.data.session_cookie;
+						for( var i in cookie.cookies ){
+							document.cookie = cookie.cookies[i] + ';domain=' + cookie.domain;
+						}
+					}
 				} else {
 					$scope.user.player_id = false;
 					$scope.user.logged_in = false;

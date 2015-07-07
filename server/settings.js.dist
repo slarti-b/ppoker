@@ -4,7 +4,9 @@ module.exports = {
 	settings: {
 		host: 'poker.example.com',
 		port: 0,
-		jira_url: 'https://jira.example.com/',
+		jira_protocol: 'https',
+		jira_domain: 'jira.example.com',
+		jira_path: '/',
 		debug: false,
 		allow_guest: false
 	}

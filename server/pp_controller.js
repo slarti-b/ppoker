@@ -109,7 +109,8 @@ PP_Controller.prototype._post_login = function(jira, body, args){
 		var data = {
 			logged_in: true,
 			authenticated_user: true,
-			player_dispname: player.get_name()
+			player_dispname: player.get_name(),
+			session_cookie: jira.get_session_cookie_info()
 		};
 		var message = new PP_SuccessResponse('login', data, player.get_id(), null);
 		ws.send( JSON.stringify(message) );
