@@ -3,25 +3,25 @@
 	<form data-ng-controller="SetIssueContainer as issue" data-ng-submit="issue.set()">
 		<div class="button-container">
 			<input type="radio" data-ng-model="set_using" data-ng-disabled="!user.authenticated" value="jira" id="set-using-jira" />
-			<label for="set-using-jira" class="button" data-ng-class="{active:set_using_jira(), disabled: !user.authenticated}">Set From Jira</label>
+			<label for="set-using-jira" class="button set-using-jira" data-ng-class="{active:set_using_jira(), disabled: !user.authenticated}" title="Set From Jira"><span class="text">Set From Jira</span></label>
 			<input type="radio" data-ng-model="set_using" value="jira_link" id="set-using-jiralink" />
-			<label for="set-using-jiralink" class="button" data-ng-class="{active:set_using_jira_link()}">Set With Jira Link</label>
+			<label for="set-using-jiralink" class="button set-jira-link" data-ng-class="{active:set_using_jira_link()}" title="Set With Jira Link"><span class="text">Set With Jira Link</span></label>
 			<input type="radio" data-ng-model="set_using" value="manually" id="set-manually" />
-			<label for="set-manually" class="button" data-ng-class="{active:set_manually()}">Set Manually</label>
+			<label for="set-manually" class="button set-manually" data-ng-class="{active:set_manually()}" title="Set Manually"><span class="text">Set Manually</span></label>
 		</div>
 		<div class="issue-row">
 			<label for="issue-id">Issue ID</label>
 			<input id="issue-id" type="text" data-ng-model="issue_id" required placeholder="WEB-1234" />
 		</div>
-		<div class="issue-row">
+		<div class="issue-row" data-ng-hide="set_using_jira()">
 			<label for="issue-name">Issue Title</label>
 			<input id="issue-name" type="text" data-ng-model="issue_name" data-ng-disabled="set_using_jira()" required placeholder="My Issue" />
 		</div>
-		<div class="issue-row">
+		<div class="issue-row" data-ng-hide="set_using_jira()">
 			<label for="issue-desc">Issue Description</label>
 			<textarea id="issue-desc" data-ng-model="issue_desc" data-ng-disabled="set_using_jira()" placeholder="An optional description of the issue"></textarea>
 		</div>
-		<div class="issue-row">
+		<div class="issue-row" data-ng-hide="!set_manually()">
 			<label for="issue-link">Issue Link</label>
 			<input id="issue-link" type="text" data-ng-model="issue_link" data-ng-disabled="!set_manually()" required placeholder="https://www.example.com/issue/ABC"/>
 		</div>

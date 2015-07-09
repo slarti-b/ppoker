@@ -12,6 +12,8 @@
   font-style: normal;
 }
 
+$active-button-colour: blue;
+
 @mixin icon($lig){
   font-family: 'icomoon';
   speak: none;
@@ -111,6 +113,13 @@
   }
 }
 
+.playing-as,
+.meeting-head{
+  @media #{$small-only}{
+    display: none
+  }
+}
+
 .disabled{
   opacity: 0.7;
   cursor: not-allowed;
@@ -177,15 +186,19 @@ $card-width: 5em;
   }
 }
 button, .button{
-  border: 1px solid #000000;
-  padding: 0 3px;
   text-align: center;
   cursor: pointer;
   &.disabled{
     cursor: not-allowed;
   }
+  border: 1px solid;
+  padding: 6px 3px;
   &.active{
-    background: #008000;
+    color: $active-button-colour;
+    border-color: $active-button-colour;
+  }
+  .text {
+    margin-left: 3px;
   }
 }
 
@@ -224,5 +237,27 @@ li.button{
   button{
     @include grid-column($columns:12);
     @include issue-elements;
+  }
+}
+
+.set-issue-container{
+  .button{
+    @media #{$small-only}{
+      font-size: 24px;
+      border: none;
+      .text{
+        display: none;
+      }
+    }
+
+    &.set-using-jira{
+      @include icon('\e60a');
+    }
+    &.set-jira-link{
+      @include icon('\e61f');
+    }
+    &.set-manually{
+      @include icon('\e600');
+    }
   }
 }
