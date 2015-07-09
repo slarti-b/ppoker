@@ -78,7 +78,7 @@ module.exports = function(grunt) {
 					port: 8090
 				}
 			},
-			files: ['<%= pkg.name %>.css']
+			files: ['dist/<%= pkg.name %>.css']
 		}
 	}
 });

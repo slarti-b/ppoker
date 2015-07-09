@@ -15,7 +15,8 @@ app.controller('MenuController', ['$scope', '$window', function($scope, $window)
 				},
 				disabled: $scope.show_set_issue(),
 				hide: $scope.show_set_issue(),
-                confirm_if: false
+                confirm_if: false,
+				icon: 'change-issue'
 			} );
 			menu.menu_items.push( {
 				text: 'View Board',
@@ -25,7 +26,8 @@ app.controller('MenuController', ['$scope', '$window', function($scope, $window)
 				},
 				disabled: $scope.show_main_board(),
 				hide: $scope.show_main_board(),
-                confirm_if: false
+                confirm_if: false,
+				icon: 'view-board'
 			} );
 			menu.menu_items.push( {
 				text: 'Show Cards',
@@ -35,7 +37,8 @@ app.controller('MenuController', ['$scope', '$window', function($scope, $window)
 				disabled: !$scope.show_main_board(),
 				hide: false,
 				confirm_if: !$scope.meeting.all_chosen,
-				confirm_msg: 'Are you sure you want to show cards?  Not all players have bid yet.'
+				confirm_msg: 'Are you sure you want to show cards?  Not all players have bid yet.',
+				icon: 'show-cards'
 			} );
 			menu.menu_items.push( {
 				text: 'End Meeting',
@@ -43,7 +46,8 @@ app.controller('MenuController', ['$scope', '$window', function($scope, $window)
 				disabled: false,
 				hide: false,
                 confirm_if: true,
-				confirm_msg: 'Are you sure you want to end the meeting for everyone?'
+				confirm_msg: 'Are you sure you want to end the meeting for everyone?',
+				icon: 'end-meeting'
 			} );
 		} else if( $scope.meeting.meeting_id ) {
 			menu.menu_items.push( {
@@ -52,7 +56,8 @@ app.controller('MenuController', ['$scope', '$window', function($scope, $window)
 				disabled: false,
 				hide: false,
                 confirm_if: true,
-                confirm_msg: 'Are you sure you want to leave the meeting?'
+                confirm_msg: 'Are you sure you want to leave the meeting?',
+				icon: 'leave-meeting'
 			} );
 		}
 		menu.menu_items.push( {
@@ -61,7 +66,8 @@ app.controller('MenuController', ['$scope', '$window', function($scope, $window)
 			disabled: false,
 			hide: false,
             confirm_if: true,
-            confirm_msg: 'Are you sure you want to logout?'
+            confirm_msg: 'Are you sure you want to logout?',
+			icon: 'logout'
 		} );
 	};
 
