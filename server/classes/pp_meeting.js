@@ -357,6 +357,10 @@ PP_Meeting.prototype.get_host_name = function() {
  */
 PP_Meeting.prototype._check_if_host = function(player_id) {
 	if( !player_id || player_id !== this._host ) {
+		logger.log('_check_if_host player_id:');
+		logger.log_o(player_id);
+		logger.log('_check_if_host this._host:');
+		logger.log_o(this._host);
 		throw new PP_NotAuthorisedException('Only the host may do that!');
 	}
 };
@@ -396,6 +400,8 @@ PP_Meeting.prototype._get_players_for_response = function(){
 };
 
 PP_Meeting.prototype.has_player = function(player_id) {
+	logger.log('called has_player');
+	logger.log_o(this._players, 1);
 	return this._players && this._players[player_id];
 };
 

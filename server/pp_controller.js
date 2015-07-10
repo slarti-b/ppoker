@@ -2,8 +2,6 @@
 
 // Get classes
 var PP_Responses = require( './classes/pp_response');
-var PP_SuccessResponse = PP_Responses.PP_SuccessResponse;
-var PP_ListResponse = PP_Responses.PP_ListResponse;
 var PP_Exceptions = require( './helpers/pp_exceptions');
 var PP_MeetingNotFoundException = PP_Exceptions.PP_MeetingNotFoundException;
 var PP_Exception = PP_Exceptions.PP_Exception;
@@ -41,42 +39,66 @@ function PP_Controller(wss){
 }
 
 PP_Controller.prototype.do_connect = function(ws, data){
-	logger.log('connect');
-	logger.log_o(data, 1);
+	logger.log('do_connect');
+	logger.log_o(data);
 	var player = this._get_player_from_data(data, true);
+	logger.log('Player');
 	logger.log_o(player, 1);
-	logger.log_o(this._players, 2);
+	logger.log('Meetings');
+	logger.log_o(this._meetings, 2);
+	this.send_message(ws, new PP_Responses.PP_SuccessResponse('connect'))
+	this.send_message( ws, this._get_update_icons_response() );
 	if( player ) {
+		player.set_ws(ws);
 		var found_meeting = false;
 		for( var m in this._meetings ){
-			if( this._meetings[ m ].has_player()){
+			logger.log('trying ' + m);
+			if( this._meetings[ m ].has_player(player.get_id())){
 				found_meeting = true;
+				this.send_message(ws, player.get_login_response(m) );
 				this._meetings[ m ].set_ws_for_player(player, ws);
 				this._meetings[ m ].update_all_with_status(true, 'reconnect')
 				break;
 			}
 		}
+		if( ! found_meeting ) {
+			this.send_message(ws, player.get_login_response(null) );
+		}
 		return true;
 	} else {
+		this.send_message(ws, new PP_Responses.PP_ErrorResponse('connect', 'Player not found'));
 		return this.do_list_meetings(ws, data);
 	}
 };
 
 PP_Controller.prototype.do_logout = function(ws, data){
+	logger.log('logging out');
+	logger.log_o(data);
 	var player = this._get_player_from_data(data);
+	logger.log_o(player, 1);
 	for( var m in this._meetings ){
 		if( this._meetings[ m ].has_player(player.get_id()) ){
+			logger.log(m);
 			if( this._meetings[ m ].is_host(player) ){
-				this._meetings[ m ].end(player);
+				logger.log('ending meeting');
+				this._end_meeting(player, m);
 			} else {
+				logger.log('leaving meeting');
 				this._meetings[ m ].leave(player);
 			}
 		}
 	}
 	delete this._players[ player.get_id() ];
-	var message = new PP_SuccessResponse('logout', {is_update: true}, false, null);
+	var message = new PP_Responses.PP_SuccessResponse('logout', {is_update: true}, false, null);
 	ws.send( JSON.stringify(message) );
 	return true;
+};
+
+PP_Controller.prototype._end_meeting = function(player, meeting_id){
+	var meeting = this._get_meeting(meeting_id, 'end_meeting');
+	meeting.end(player);
+	delete this._meetings[meeting_id];
+	this.broadcast( this._get_meetings_list_response() );
 };
 
 PP_Controller.prototype.do_login = function(ws, data) {
@@ -84,14 +106,10 @@ PP_Controller.prototype.do_login = function(ws, data) {
 		if( true !== settings.allow_guest ) {
 			throw new PP_Exceptions.PP_NotAuthorisedException('Guest play has been disabled.  Please log in');
 		} else {
-			var player = new PP_Player( ws, PP_Auth.createGUID(), data.player_name );
+			var player = new PP_Player( ws, PP_Auth.createGUID(), data.player_name, false );
 			this._players[ player.get_id() ] = player;
-			var data = {
-				logged_in: true,
-				authenticated_user: false,
-				player_dispname: player.get_name()
-			};
-			var message = new PP_SuccessResponse('login', data, player.get_id(), null);
+
+			var message = player.get_login_response(null);
 			ws.send( JSON.stringify(message) );
 			return true;
 		}
@@ -105,6 +123,7 @@ PP_Controller.prototype.do_get_icons = function(ws, data){
 	logger.log('called do_get_icons');
 	var jira = new PP_Jira;
 	jira.get_issue_types(this._got_icons, {controller: this, ws: ws});
+
 };
 
 PP_Controller.prototype._got_icons = function(args){
@@ -127,9 +146,13 @@ PP_Controller.prototype._got_icons = function(args){
 		logger.log_o(found_all);
 		logger.log_o(controller.icons.issue_types);
 		if( found_all ){
-			controller.broadcast( new PP_SuccessResponse('update_jira_icons', controller.icons) );
+			controller.broadcast( controller._get_update_icons_response() );
 		}
 	}
+};
+
+PP_Controller.prototype._get_update_icons_response = function(){
+	return new PP_Responses.PP_SuccessResponse('update_jira_icons', this.icons);
 };
 
 /**
@@ -144,14 +167,9 @@ PP_Controller.prototype._post_login = function(jira, body, args){
 	var controller = args.controller;
 	logger.log_o(body);
 	if( jira.is_logged_in() ){
-		var player = new PP_Player( ws, PP_Auth.createGUID(), body.displayName );
+		var player = new PP_Player( ws, PP_Auth.createGUID(), body.displayName, true );
 		controller._players[ player.get_id() ] = player;
-		var data = {
-			logged_in: true,
-			authenticated_user: true,
-			player_dispname: player.get_name()
-		};
-		var message = new PP_SuccessResponse('login', data, player.get_id(), null);
+		var message = player.get_login_response(null);
 		ws.send( JSON.stringify(message) );
 		logger.log('calling do_get_icons');
 		controller.do_get_icons(ws, {});
@@ -197,10 +215,7 @@ PP_Controller.prototype.do_end_meeting = function(ws, data) {
 	var meeting_id = data.meeting_id;
 	var player = this._get_player_from_data(data);
 
-	var meeting = this._get_meeting(meeting_id, 'end_meeting');
-	meeting.end(player);
-	delete this._meetings[meeting_id];
-	this.broadcast( this._get_meetings_list_response() );
+	this._end_meeting(player, meeting_id);
 	return true;
 };
 
@@ -269,7 +284,7 @@ PP_Controller.prototype.do_leave_meeting = function(ws, data) {
 	// Leave meeting.  This will inform everyone else
 	meeting.leave(player);
 	// Inform the person themselves that it has succeeded
-	this.send_message(ws, new PP_SuccessResponse('left_meeting', {is_update: true}, player.get_id(), false))
+	this.send_message(ws, new PP_Responses.PP_SuccessResponse('left_meeting', {is_update: true}, player.get_id(), false))
 
 	return true;
 };
@@ -318,7 +333,7 @@ PP_Controller.prototype._get_meetings_list_response = function(){
 			           host: meeting.get_host_name()
 		           });
 	}
-	return new PP_ListResponse( 'meetings_list', list );
+	return new PP_Responses.PP_ListResponse( 'meetings_list', list );
 };
 
 PP_Controller.prototype.broadcast = function(data){

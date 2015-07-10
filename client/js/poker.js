@@ -16,20 +16,22 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		this._local_storage = $localStorage.$default(default_vals);
 		this._default_vals = default_vals;
 		this._storage = {};
-		this._use_local_storage = false;
+		this.use_local = false;
 
 
 		this.set_storage_type= function(use_local){
-			log_o('setting lcoal storage', use_local);
+			log_o('setting local storage', use_local);
 			if( use_local ){
 				this._storage = this._local_storage;
-				this._use_local_storage = true;
+				this.use_local = true;
+				this.set('use_local', true);
 			}else{
 				this._storage = {};
+				this._local_storage['pp_use_local'] = false;
 				for( var k in this._default_vals ) {
 					this._storage[k] = this._default_vals[k];
 				}
-				this._use_local_storage = false;
+				this.use_local = false;
 			}
 		};
 
@@ -41,7 +43,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		}
 
 		this.clear = function(){
-			if( this._use_local_storage ) {
+			if( this.use_local ) {
 				for( var k in this._storage ){
 					delete this._storage[k];
 				}
@@ -107,6 +109,10 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 				}
 			} else {
 				log_o('error', data);
+				switch( data.action ){
+					case 'connect':
+						$scope.storage.set('player_id', false);
+				}
 			}
 		},
 		ws_do_action: function($scope, action, data){
@@ -235,9 +241,9 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		},
 
 		logout: function($scope) {
+			$scope.do_action('logout');
 			$scope.storage.clear();
 			$scope.user = {};
-			$scope.do_action('logout');
 		}
 	};
 
@@ -255,6 +261,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 			pp_player_id: false
 		};
 		$scope.storage = new PP_Storage($localStorage, default_vals);
+
 
 		// Open the websocket connection
 		$scope.ws = base_controller.ws_create_connection($websocket);

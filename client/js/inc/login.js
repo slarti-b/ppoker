@@ -3,7 +3,7 @@
 app.controller('LoginController', ['$scope', function ($scope){
 
     this.do_login = function(){
-        $scope.storage.set_storage_type($scope.use_local);
+        $scope.storage.set_storage_type($scope.storage.use_local);
         var data = {};
         log_o('$scope', $scope);
         if( $scope.play_as_guest ) {
