@@ -32,7 +32,8 @@ module.exports = function(grunt) {
 			options: {
 				prefix: '// @@',
 				globals: {
-					is_dev: true
+					is_dev: true,
+					dummy: ''
 				}
 			},
 			files: {
@@ -44,7 +45,8 @@ module.exports = function(grunt) {
 			options: {
 				prefix: '// @@',
 				globals: {
-					is_dev: false
+					is_dev: false,
+					dummy: ''
 				},
 				processIncludeContents: function(file_contents, params){
 					"use strict";
