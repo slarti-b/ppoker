@@ -349,18 +349,19 @@ PP_Jira.prototype.get_issue = function(issue_id, data, callback, args){
 	this._get('issue/' + issue_id, data, callback, false, false, args);
 };
 
+
 PP_Jira.prototype.get_issue_types = function(callback, args){
 	this._get('issuetype', false, this._got_issue_types, false, false, {callback: callback, args: args});
 };
 
+PP_Jira.prototype.get_prios = function(callback, args){
+	this._get('priority', false, this._got_prios, false, false, {callback: callback, args: args});
+};
+
 PP_Jira.prototype._got_issue_types = function( error, response, body, jira ){
-	logger.log('_got_issue_types');
-	logger.log_o( jira._get_response_code(response) );
-	logger.log_o(body, 2);
 	if( jira._get_response_code(response) && 200 == jira._get_response_code(response) ){
 		var args = jira.get_callback_args();
 		for( var i in body ){
-			logger.log( 'setting ' + body[ i ].id + ' false' );
 			args.args.controller.icons.issue_types[  body[ i ].id ] = false;
 		}
 		for( var i in body ){
@@ -374,11 +375,25 @@ PP_Jira.prototype._got_issue_types = function( error, response, body, jira ){
 	}
 };
 
+PP_Jira.prototype._got_prios = function( error, response, body, jira ){
+	if( jira._get_response_code(response) && 200 == jira._get_response_code(response) ){
+		var args = jira.get_callback_args();
+		for( var i in body ){
+			args.args.controller.icons.issue_types[  body[ i ].id ] = false;
+		}
+		for( var i in body ){
+			var bin_args = {
+				prio_id: body[ i ].id,
+				prio_name: body[ i ].name,
+				prio_colour: body[ i ].statusColor,
+				args: args
+			};
+			jira.get_binary_data( body[i].iconUrl, jira._got_prio, bin_args);
+		}
+	}
+};
 
 PP_Jira.prototype._got_issue_type = function( error, response, body, jira, args ){
-	logger.log('called _got_issue_type ');
-	logger.log_o( jira._get_response_code(response) );
-	logger.log_o( args, 2 );
 	if( jira._get_response_code(response) && 200 == jira._get_response_code(response) && args && args.args ) {
 		var ws = args.args.args.ws;
 		var controller = args.args.args.controller;
@@ -387,10 +402,24 @@ PP_Jira.prototype._got_issue_type = function( error, response, body, jira, args 
 			icon: new Buffer(body ).toString('base64'),
 			mime_type : response.headers["content-type"]
 		};
-		logger.log_o(controller.icons.issue_types);
 		args.args.callback.call(this, args.args.args);
 	}
 };
+
+PP_Jira.prototype._got_prio = function( error, response, body, jira, args ){
+	if( jira._get_response_code(response) && 200 == jira._get_response_code(response) && args && args.args ) {
+		var ws = args.args.args.ws;
+		var controller = args.args.args.controller;
+		controller.icons.prios[args.prio_id] = {
+			name: args.prio_name,
+			colour: args.prio_colour,
+			icon: new Buffer(body ).toString('base64'),
+			mime_type : response.headers["content-type"]
+		};
+		args.args.callback.call(this, args.args.args);
+	}
+};
+
 
 PP_Jira.prototype.get_binary_data = function(url, callback, args){
 	logger.log('called get_binary_data for ' + url);

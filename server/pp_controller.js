@@ -28,6 +28,7 @@ function PP_Controller(wss){
 	this._meetings = {};
 	this.all_clients = wss.clients;
 	this._players = {};
+	this._avatars = {};
 	this.icons = {
 		issue_types: {
 
@@ -71,36 +72,6 @@ PP_Controller.prototype.do_connect = function(ws, data){
 	}
 };
 
-PP_Controller.prototype.do_logout = function(ws, data){
-	logger.log('logging out');
-	logger.log_o(data);
-	var player = this._get_player_from_data(data);
-	logger.log_o(player, 1);
-	for( var m in this._meetings ){
-		if( this._meetings[ m ].has_player(player.get_id()) ){
-			logger.log(m);
-			if( this._meetings[ m ].is_host(player) ){
-				logger.log('ending meeting');
-				this._end_meeting(player, m);
-			} else {
-				logger.log('leaving meeting');
-				this._meetings[ m ].leave(player);
-			}
-		}
-	}
-	delete this._players[ player.get_id() ];
-	var message = new PP_Responses.PP_SuccessResponse('logout', {is_update: true}, false, null);
-	ws.send( JSON.stringify(message) );
-	return true;
-};
-
-PP_Controller.prototype._end_meeting = function(player, meeting_id){
-	var meeting = this._get_meeting(meeting_id, 'end_meeting');
-	meeting.end(player);
-	delete this._meetings[meeting_id];
-	this.broadcast( this._get_meetings_list_response() );
-};
-
 PP_Controller.prototype.do_login = function(ws, data) {
 	if( data.play_as_guest ) {
 		if( true !== settings.allow_guest ) {
@@ -123,6 +94,7 @@ PP_Controller.prototype.do_get_icons = function(ws, data){
 	logger.log('called do_get_icons');
 	var jira = new PP_Jira;
 	jira.get_issue_types(this._got_icons, {controller: this, ws: ws});
+	jira.get_prios(this._got_icons, {controller: this, ws: ws});
 
 };
 
@@ -133,21 +105,31 @@ PP_Controller.prototype._got_icons = function(args){
 	/**
 	 * @type controller PP_Controller
 	 */
-	logger.log_o(controller.icons.issue_types );
-	if( controller.icons.issue_types ){
-		var found_all = true;
+	logger.log_o(controller.icons);
+	var found_all = true;
+	var found_some = false;
+	if( found_all && controller.icons.issue_types ){
 		for( var id in controller.icons.issue_types ){
-			if( ! controller.icons.issue_types[id] ){
+			if( controller.icons.issue_types[id] ) {
+				found_some = true;
+			} else {
 				found_all = false;
 				break;
 			}
 		}
-		logger.log('found_all');
-		logger.log_o(found_all);
-		logger.log_o(controller.icons.issue_types);
-		if( found_all ){
-			controller.broadcast( controller._get_update_icons_response() );
+	}
+	if( found_all && controller.icons.prios ){
+		for( var id in controller.icons.prios ){
+			if( controller.icons.prios[id] ) {
+				found_some = true;
+			} else {
+				found_all = false;
+				break;
+			}
 		}
+	}
+	if( found_some && found_all ){
+		controller.broadcast( controller._get_update_icons_response() );
 	}
 };
 
@@ -177,6 +159,36 @@ PP_Controller.prototype._post_login = function(jira, body, args){
 	} else {
 		var message = new PP_Responses.PP_ErrorResponse('login', jira.get_message());
 	}
+};
+
+PP_Controller.prototype.do_logout = function(ws, data){
+	logger.log('logging out');
+	logger.log_o(data);
+	var player = this._get_player_from_data(data);
+	logger.log_o(player, 1);
+	for( var m in this._meetings ){
+		if( this._meetings[ m ].has_player(player.get_id()) ){
+			logger.log(m);
+			if( this._meetings[ m ].is_host(player) ){
+				logger.log('ending meeting');
+				this._end_meeting(player, m);
+			} else {
+				logger.log('leaving meeting');
+				this._meetings[ m ].leave(player);
+			}
+		}
+	}
+	delete this._players[ player.get_id() ];
+	var message = new PP_Responses.PP_SuccessResponse('logout', {is_update: true}, false, null);
+	ws.send( JSON.stringify(message) );
+	return true;
+};
+
+PP_Controller.prototype._end_meeting = function(player, meeting_id){
+	var meeting = this._get_meeting(meeting_id, 'end_meeting');
+	meeting.end(player);
+	delete this._meetings[meeting_id];
+	this.broadcast( this._get_meetings_list_response() );
 };
 
 PP_Controller.prototype.do_refresh_all = function(ws, data) {

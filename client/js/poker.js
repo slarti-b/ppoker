@@ -213,6 +213,15 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 			return '';
 		},
 
+		get_prio_icon: function(id){
+			if( id && angular.isObject(base_controller.jira_icons) && angular.isObject(base_controller.jira_icons.prios) ){
+				if( angular.isObject(base_controller.jira_icons.prios[id]) && base_controller.jira_icons.prios[id].icon ){
+					return 'data:' + base_controller.jira_icons.prios[id].mime_type + ';base64,' + base_controller.jira_icons.prios[id].icon;
+				}
+			}
+			return '';
+		},
+
 		get_initial_status: function($scope) {
 			return {
 				meeting_id: false,
