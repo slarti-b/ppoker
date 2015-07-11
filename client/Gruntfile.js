@@ -87,6 +87,6 @@ grunt.loadNpmTasks('grunt-contrib-watch');
 grunt.loadNpmTasks('grunt-sass');
 grunt.loadNpmTasks('grunt-include-replace');
 grunt.registerTask('default', ['sass:dev', 'includereplace:dev', 'watch']);
-grunt.registerTask('prod', ['sass:prod', 'includereplace:prod']);
+grunt.registerTask('build', ['sass:prod', 'includereplace:prod']);
 
 };

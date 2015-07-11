@@ -3,10 +3,14 @@
 // @@include('inc/options.js')
 
 function log(message){
-	console && console.log && console.log(message);
+	if( options.debug ){
+		console && console.log && console.log(message);
+	}
 }
 function log_o(label, obj){
-	console && console.log && console.log(label + ': %o', obj);
+	if( options.debug ){
+		console && console.log && console.log(label + ': %o', obj);
+	}
 }
 var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 
