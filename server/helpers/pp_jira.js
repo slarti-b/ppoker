@@ -420,6 +420,35 @@ PP_Jira.prototype._got_prio = function( error, response, body, jira, args ){
 	}
 };
 
+PP_Jira.prototype.get_avatars = function(callback, avatarUrls, args){
+	var id = args.id;
+	controller.avatars[id] = {
+		small: false,
+		large: false
+	};
+
+	var bin_args = {
+		size: 'small',
+		args: args,
+		callback: callback
+	};
+	this.get_binary_data(avatarUrls['24x24'], this._got_avatar, bin_args);
+
+	bin_args.size = 'large';
+	this.get_binary_data(avatarUrls['48x48'], this._got_avatar, bin_args);
+};
+
+PP_Jira.prototype._got_avatar = function( error, response, body, jira, args ){
+	if( jira._get_response_code(response) && 200 == jira._get_response_code(response) && args && args.args ) {
+		var controller = args.args.controller;
+
+		controller.avatars[args.args.id][args.size] = {
+			icon: new Buffer(body ).toString('base64'),
+			mime_type : response.headers["content-type"]
+		};
+		args.callback.call(this, args.args);
+	}
+};
 
 PP_Jira.prototype.get_binary_data = function(url, callback, args){
 	logger.log('called get_binary_data for ' + url);

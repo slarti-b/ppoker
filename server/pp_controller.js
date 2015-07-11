@@ -28,7 +28,7 @@ function PP_Controller(wss){
 	this._meetings = {};
 	this.all_clients = wss.clients;
 	this._players = {};
-	this._avatars = {};
+	this.avatars = {};
 	this.icons = {
 		issue_types: {
 
@@ -40,36 +40,46 @@ function PP_Controller(wss){
 }
 
 PP_Controller.prototype.do_connect = function(ws, data){
-	logger.log('do_connect');
-	logger.log_o(data);
 	var player = this._get_player_from_data(data, true);
-	logger.log('Player');
-	logger.log_o(player, 1);
-	logger.log('Meetings');
-	logger.log_o(this._meetings, 2);
+	// Set player id on client
 	this.send_message(ws, new PP_Responses.PP_SuccessResponse('connect'))
-	this.send_message( ws, this._get_update_icons_response() );
+
 	if( player ) {
+		// Update player on server
 		player.set_ws(ws);
+
+		// See if we are in a meeting
 		var found_meeting = false;
 		for( var m in this._meetings ){
-			logger.log('trying ' + m);
 			if( this._meetings[ m ].has_player(player.get_id())){
 				found_meeting = true;
+				// Update client with meeting id
 				this.send_message(ws, player.get_login_response(m) );
+				// Update player in meeting on server
 				this._meetings[ m ].set_ws_for_player(player, ws);
+				// Update all in meeting
 				this._meetings[ m ].update_all_with_status(true, 'reconnect')
 				break;
 			}
 		}
 		if( ! found_meeting ) {
+			// Set meeting id null on client
 			this.send_message(ws, player.get_login_response(null) );
 		}
-		return true;
+
 	} else {
 		this.send_message(ws, new PP_Responses.PP_ErrorResponse('connect', 'Player not found'));
-		return this.do_list_meetings(ws, data);
+		this.do_list_meetings(ws, data);
 	}
+
+	// Send icons
+	this.send_message( ws, this._get_update_icons_response() );
+	// Send avatars
+	for( var id in this.avatars ){
+		this.send_avatars(id);
+	}
+	
+	return true;
 };
 
 PP_Controller.prototype.do_login = function(ws, data) {
@@ -96,6 +106,16 @@ PP_Controller.prototype.do_get_icons = function(ws, data){
 	jira.get_issue_types(this._got_icons, {controller: this, ws: ws});
 	jira.get_prios(this._got_icons, {controller: this, ws: ws});
 
+};
+
+PP_Controller.prototype._got_avatars = function( args ) {
+	args.controller.send_avatars(args.id);
+};
+
+PP_Controller.prototype.send_avatars = function(id){
+	if( this.avatars.hasOwnProperty(id) && this.avatars[id ].small && this.avatars[id ].large ) {
+		this.broadcast( new PP_Responses.PP_SuccessResponse('add_avatar', this.avatars[id]) );
+	}
 };
 
 PP_Controller.prototype._got_icons = function(args){
@@ -152,20 +172,20 @@ PP_Controller.prototype._get_update_icons_response = function(){
 PP_Controller.prototype._post_login = function(jira, body, args){
 	var ws = args.ws;
 	var controller = args.controller;
-	logger.log_o(body);
 	if( jira.is_logged_in() ){
 		var player = new PP_Player( ws, PP_Auth.createGUID(), body.displayName, true );
 		controller._players[ player.get_id() ] = player;
 		var message = player.get_login_response(null);
 		controller.send_message(ws, message);
-		logger.log('calling do_get_icons');
 		controller.do_get_icons(ws, {});
+		jira.get_avatars(controller._got_avatars,  body.avatarUrls, {controller: controller, ws: ws, id: body.key});
 		return true;
 	} else {
 		var message = new PP_Responses.PP_ErrorResponse('login', jira.get_message());
 		controller.send_message(ws, message);
 	}
 };
+
 
 PP_Controller.prototype.do_logout = function(ws, data){
 	logger.log('logging out');
