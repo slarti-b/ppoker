@@ -193,7 +193,6 @@ $card-width: 5em;
     }
   }
   label.button{
-    width: 100%;
     margin-left: 0;
     margin-right: 0;
   }
@@ -204,11 +203,12 @@ $card-width: 5em;
 button, .button{
   text-align: center;
   cursor: pointer;
+  width: 100%;
   &.disabled{
     cursor: not-allowed;
   }
   border: 1px solid;
-  padding: 6px 3px;
+  //padding: 6px 3px;
   &.active{
     color: $active-button-colour;
     border-color: $active-button-colour;
@@ -220,12 +220,9 @@ button, .button{
 
 li.button{
   list-style-type: none;
-  width: 100%;
-
 }
 
 @mixin issue-elements{
-  padding: 0;
   line-height: 2em;
   font-size: 1.2em;
 }
@@ -237,6 +234,7 @@ li.button{
   @include grid-row;
   padding-top: 10px;
   label, input, textarea{
+    padding: 0;
     @media #{$small-up} {
       @include grid-column($columns: 12);
       @include issue-elements;

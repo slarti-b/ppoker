@@ -1,7 +1,7 @@
 <div class="issue-container" data-ng-if="meeting.issue">
-	<h2><img class="icon-issue-type" data-ng-src="{{get_issue_type_icon(meeting.issue.type_id)}}" alt="{{meeting.issue.type_name}}" /><a data-ng-href="{{meeting.issue.link}}" target="_blank"><span class="issue-id">{{meeting.issue.id}}</span> {{meeting.issue.name}}</a></h2>
+	<h2><img data-ng-show="meeting.issue.type_name" class="icon-issue-type" data-ng-src="{{get_issue_type_icon(meeting.issue.type_id)}}" alt="{{meeting.issue.type_name}}" /><a data-ng-href="{{meeting.issue.link}}" target="_blank"><span class="issue-id">{{meeting.issue.id}}</span> {{meeting.issue.name}}</a></h2>
 	<p data-ng-if="meeting.issue.parent_id">Parent: <a href="{{meeting.issue.parent_link}}">{{meeting.issue.parent_id}} {{meeting.issue.parent_name}}</a></p>
-	<p class="issue-info">
+	<p class="issue-info" data-ng-show="meeting.issue.project_name">
 		<span class="reporter">Reported by {{meeting.issue.reporter_name}}.</span>
 		<span class="project">Project: {{meeting.issue.project_name}}</span>
 		<span class="subtasks" data-ng-show="meeting.issue.num_subtasks">Has {{meeting.issue.num_subtasks}} subtasks</span>
