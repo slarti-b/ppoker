@@ -83,6 +83,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 				};
 				base_controller.ws_do_action($scope, 'connect', data);
 			} else {
+				base_controller.ws_do_action($scope, 'connect', {});
 				base_controller.ws_do_action($scope, 'list_meetings', {});
 			}
 
@@ -100,6 +101,9 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 				} else {
 					log_o('action received',  data.action );
 					switch( data.action ){
+						case 'settings':
+							base_controller.set_settings($scope, data.data);
+							break;
 						case 'meetings_list':
 							$scope.update_meetings_list(data);
 							break;
@@ -134,6 +138,10 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		},
 
 		/* Update */
+		set_settings: function( $scope, data  ) {
+			$scope.settings.allow_guest = data.allow_guest;
+		},
+
 		update_status: function($scope, data, $sce){
 			log_o( 'updating status', data );
 			log_o('before', $scope.meeting);
@@ -294,6 +302,8 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		$scope.$on('pp_update_status', function(event, data){
 			base_controller.update_status($scope, data, $sce);
 		});
+
+        $scope.settings = {};
 
 		$scope.meeting = base_controller.get_initial_status($scope);
 		$scope.user = base_controller.get_initial_user($scope);

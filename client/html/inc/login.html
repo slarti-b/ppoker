@@ -1,9 +1,9 @@
 <h1>You must log in to play</h1>
-<div>
+<div data-ng-show="settings.allow_guest">
 	<input type="checkbox" data-ng-model="play_as_guest" id="play-as-guest" value="1" />
 	<label for="play-as-guest">Play as guest</label>
 </div>
-<div data-ng-if="play_as_guest">
+<div data-ng-if="settings.allow_guest && play_as_guest">
 	<form data-ng-controller="LoginController as login" data-ng-submit="login.do_login()">
 		<input type="hidden" data-ng-model="play_as_guest" value="1" />
 		<div>
@@ -20,7 +20,7 @@
 		</div>
 	</form>
 </div>
-<div data-ng-if="!play_as_guest">
+<div data-ng-if="!settings.allow_guest || !play_as_guest">
 	<form data-ng-controller="LoginController as login" data-ng-submit="login.do_login()">
 		<input type="hidden" data-ng-model="play_as_guest" value="0" />
 		<div>

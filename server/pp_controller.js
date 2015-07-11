@@ -39,11 +39,16 @@ function PP_Controller(wss){
 	};
 }
 
-PP_Controller.prototype.do_connect = function(ws, data){
-	var player = this._get_player_from_data(data, true);
-	// Set player id on client
-	this.send_message(ws, new PP_Responses.PP_SuccessResponse('connect'))
+PP_Controller.prototype._send_settings = function(ws){
+	var data = {
+		allow_guest: settings.allow_guest
+	};
+	this.send_message(ws, new PP_Responses.PP_SuccessResponse('settings', data))
+};
 
+PP_Controller.prototype.do_connect = function(ws, data){
+	this._send_settings(ws);
+	var player = this._get_player_from_data(data, true);
 	if( player ) {
 		// Update player on server
 		player.set_ws(ws);
@@ -78,7 +83,7 @@ PP_Controller.prototype.do_connect = function(ws, data){
 	for( var id in this.avatars ){
 		this.send_avatars(id);
 	}
-	
+
 	return true;
 };
 
