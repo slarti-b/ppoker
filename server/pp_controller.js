@@ -106,31 +106,36 @@ PP_Controller.prototype._got_icons = function(args){
 	 * @type controller PP_Controller
 	 */
 	logger.log_o(controller.icons);
-	var found_all = true;
+
+	if( controller._all_icons_fetched() ){
+		controller.broadcast( controller._get_update_icons_response() );
+	}
+};
+
+PP_Controller.prototype._all_icons_fetched = function(){
 	var found_some = false;
-	if( found_all && controller.icons.issue_types ){
+	if( controller.icons.issue_types ){
 		for( var id in controller.icons.issue_types ){
 			if( controller.icons.issue_types[id] ) {
 				found_some = true;
 			} else {
-				found_all = false;
+				return false;
 				break;
 			}
 		}
 	}
-	if( found_all && controller.icons.prios ){
+	if( controller.icons.prios ){
 		for( var id in controller.icons.prios ){
 			if( controller.icons.prios[id] ) {
 				found_some = true;
 			} else {
-				found_all = false;
+				return false;
 				break;
 			}
 		}
 	}
-	if( found_some && found_all ){
-		controller.broadcast( controller._get_update_icons_response() );
-	}
+
+	return found_some;
 };
 
 PP_Controller.prototype._get_update_icons_response = function(){
@@ -152,12 +157,13 @@ PP_Controller.prototype._post_login = function(jira, body, args){
 		var player = new PP_Player( ws, PP_Auth.createGUID(), body.displayName, true );
 		controller._players[ player.get_id() ] = player;
 		var message = player.get_login_response(null);
-		ws.send( JSON.stringify(message) );
+		controller.send_message(ws, message);
 		logger.log('calling do_get_icons');
 		controller.do_get_icons(ws, {});
 		return true;
 	} else {
 		var message = new PP_Responses.PP_ErrorResponse('login', jira.get_message());
+		controller.send_message(ws, message);
 	}
 };
 
