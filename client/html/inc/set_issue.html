@@ -2,12 +2,18 @@
 	<h2>Set issue</h2>
 	<form data-ng-controller="SetIssueContainer as issue" data-ng-submit="issue.set()">
 		<div class="button-container">
-			<input type="radio" data-ng-model="set_using" data-ng-disabled="!user.authenticated" value="jira" id="set-using-jira" />
-			<label for="set-using-jira" class="button set-using-jira" data-ng-class="{active:set_using_jira(), disabled: !user.authenticated}" title="Set From Jira"><span class="text">Set From Jira</span></label>
-			<input type="radio" data-ng-model="set_using" value="jira_link" id="set-using-jiralink" />
-			<label for="set-using-jiralink" class="button set-jira-link" data-ng-class="{active:set_using_jira_link()}" title="Set With Jira Link"><span class="text">Set With Jira Link</span></label>
-			<input type="radio" data-ng-model="set_using" value="manually" id="set-manually" />
-			<label for="set-manually" class="button set-manually" data-ng-class="{active:set_manually()}" title="Set Manually"><span class="text">Set Manually</span></label>
+			<span>
+				<input type="radio" data-ng-model="set_using" data-ng-disabled="!user.authenticated" value="jira" id="set-using-jira" />
+				<label for="set-using-jira" class="button set-using-jira" data-ng-class="{active:set_using_jira(), disabled: !user.authenticated}" title="Set From Jira"><span class="text">Set From Jira</span></label>
+			</span>
+			<span>
+				<input type="radio" data-ng-model="set_using" value="jira_link" id="set-using-jiralink" />
+				<label for="set-using-jiralink" class="button set-jira-link" data-ng-class="{active:set_using_jira_link()}" title="Set With Jira Link"><span class="text">Set With Jira Link</span></label>
+			</span>
+			<span>
+				<input type="radio" data-ng-model="set_using" value="manually" id="set-manually" />
+				<label for="set-manually" class="button set-manually" data-ng-class="{active:set_manually()}" title="Set Manually"><span class="text">Set Manually</span></label>
+			</span>
 		</div>
 		<div class="issue-row">
 			<label for="issue-id">Issue ID</label>
