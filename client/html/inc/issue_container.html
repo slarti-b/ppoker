@@ -17,7 +17,7 @@
 	</div>
 	<div class="issue-attachments" data-ng-show="meeting.issue.attachments">
 		<a class="issue-attachment" data-ng-repeat="attachment in meeting.issue.attachments" href="{{attachment.url}}" target="_blank">
-			<img alt="{{attachment.name}}" src="{{attachment.thumbnail}}" />
+			<img alt="{{attachment.name}}" data-ng-src="{{attachment.thumbnail}}" />
 		</a>
 	</div>
 </div>
