@@ -65,14 +65,16 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 	var base_controller = {
 
 		jira_icons: {},
+		fields: {},
+		avatars: {},
 
 		/* WebSocket Handling */
 		ws_create_connection: function($websocket){
 			return $websocket.$new({
-                url: options.websocket.uri,
-                reconnect: true,
-                enqueue: options.websocket.enqueue ? true : false
-            });
+				                       url: options.websocket.uri,
+				                       reconnect: true,
+				                       enqueue: options.websocket.enqueue ? true : false
+			                       });
 		},
 		ws_connected: function($scope, event){
 			console.log('Websocket connected!');
@@ -112,6 +114,12 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 							break;
 						case 'update_jira_icons':
 							base_controller.update_jira_icons($scope, data.data);
+							break;
+						case 'fields':
+							base_controller.set_fields($scope, data.data);
+							break;
+						case 'add_avatar':
+							base_controller.add_avatar($scope, data.data);
 							break;
 					}
 				}
@@ -185,14 +193,11 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 					$scope.user.logged_in = true;
 					$scope.user.authenticated = data.data.authenticated_user;
 					$scope.user.name = data.data.player_dispname;
-					$scope.user.avatar = data.data.avatar;
-
 				} else {
 					$scope.user.player_id = false;
 					$scope.user.logged_in = false;
 					$scope.user.authenticated = false;
 					$scope.user.name = '';
-					$scope.user.avatar = '';
 				}
 			});
 		},
@@ -209,7 +214,44 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		},
 
 		update_jira_icons: function($scope, data){
-			this.jira_icons = data;
+			var controller = this;
+			$scope.$apply(function(){
+				controller.jira_icons = data;
+				log_o('jira_icons', controller.jira_icons);
+			});
+		},
+
+		set_fields: function($scope, data){
+			var controller = this;
+			$scope.$apply(function(){
+				controller.fields = data;
+				log_o('fields', controller.fields);
+			});
+		},
+
+		add_avatar: function($scope, data){
+			var controller = this;
+			$scope.$apply(function(){
+				controller.avatars[ data.id ] = data;
+				log_o('avatars', controller.avatars);
+			});
+		},
+
+		get_avatar: function(id, size){
+			if( id && angular.isObject(this.avatars) && this.avatars.hasOwnProperty(id) && angular.isObject(this.avatars[id]) ){
+				if( this.avatars[id ].hasOwnProperty(size) && angular.isObject(this.avatars[id][size]) && this.avatars[id][size ].hasOwnProperty('icon') ){
+					return 'data:' + this.avatars[id][size].mime_type + ';base64,' + this.avatars[id][size].icon;
+				}
+			}
+			return '';
+		},
+
+		get_small_avatar: function(id){
+			return this.get_avatar(id, 'small');
+		},
+
+		get_large_avatar: function(id){
+			return this.get_avatar(id, 'large');
 		},
 
 		get_issue_type_icon: function(id){
@@ -276,84 +318,84 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 	                                 '$sce',
 	                                 function($scope, $localStorage, $websocket, $sce){
 
-		var default_vals = {
-			pp_use_local: true,
-			pp_dispname: '',
-			pp_player_id: false
-		};
-		$scope.storage = new PP_Storage($localStorage, default_vals);
+		                                 var default_vals = {
+			                                 pp_use_local: true,
+			                                 pp_dispname: '',
+			                                 pp_player_id: false
+		                                 };
+		                                 $scope.storage = new PP_Storage($localStorage, default_vals);
 
 
-		// Open the websocket connection
-		$scope.ws = base_controller.ws_create_connection($websocket);
+		                                 // Open the websocket connection
+		                                 $scope.ws = base_controller.ws_create_connection($websocket);
 
-		$scope.ws
-			.$on('$open', function(event){
-                 base_controller.ws_connected($scope, event);
-             })
-			.$on('$close', base_controller.ws_closed)
-			.$on('$message', function(data){
-                 return base_controller.ws_message_received($scope, data);
-             });
-		$scope.do_action = function(action, data){
-			return base_controller.ws_do_action($scope, action, data);
-		};
+		                                 $scope.ws
+			                                 .$on('$open', function(event){
+				                                      base_controller.ws_connected($scope, event);
+			                                      })
+			                                 .$on('$close', base_controller.ws_closed)
+			                                 .$on('$message', function(data){
+				                                      return base_controller.ws_message_received($scope, data);
+			                                      });
+		                                 $scope.do_action = function(action, data){
+			                                 return base_controller.ws_do_action($scope, action, data);
+		                                 };
 
-		$scope.$on('pp_update_status', function(event, data){
-			base_controller.update_status($scope, data, $sce);
-		});
+		                                 $scope.$on('pp_update_status', function(event, data){
+			                                 base_controller.update_status($scope, data, $sce);
+		                                 });
 
-        $scope.settings = {};
+		                                 $scope.settings = {};
 
-		$scope.meeting = base_controller.get_initial_status($scope);
-		$scope.user = base_controller.get_initial_user($scope);
-		$scope.update_meetings_list = function(data){
-			return base_controller.update_meetings_list($scope, data);
-		};
-		$scope.post_login = function(data){
-			return base_controller.post_login($scope, data);
-		}
-		$scope.action_data = {};
-		$scope.meetings_list = [];
+		                                 $scope.meeting = base_controller.get_initial_status($scope);
+		                                 $scope.user = base_controller.get_initial_user($scope);
+		                                 $scope.update_meetings_list = function(data){
+			                                 return base_controller.update_meetings_list($scope, data);
+		                                 };
+		                                 $scope.post_login = function(data){
+			                                 return base_controller.post_login($scope, data);
+		                                 }
+		                                 $scope.action_data = {};
+		                                 $scope.meetings_list = [];
 
-		this.join_meeting = function(meeting_id){
-			$scope.do_action('join_meeting', {
-				meeting_id: meeting_id
-			});
-		};
-		this.create_meeting = function(){
-			base_controller.create_meeting($scope);
-		};
-		$scope.logout = function(){
-			return base_controller.logout($scope);
-		};
+		                                 this.join_meeting = function(meeting_id){
+			                                 $scope.do_action('join_meeting', {
+				                                 meeting_id: meeting_id
+			                                 });
+		                                 };
+		                                 this.create_meeting = function(){
+			                                 base_controller.create_meeting($scope);
+		                                 };
+		                                 $scope.logout = function(){
+			                                 return base_controller.logout($scope);
+		                                 };
 
-		$scope.get_board_view = function(){
-			switch( $scope.meeting.board_view ) {
-				case 'set_issue':
-					return 'set_issue';
-					break;
-			}
-			// If we get this far set it to be safe
-			$scope.meeting.board_view = 'main_board';
-			return 'main_board';
-		};
-		$scope.show_main_board = function(){
-			return 'main_board' === $scope.get_board_view();
-		};
-		$scope.show_set_issue = function(){
-			return 'set_issue' === $scope.get_board_view();
-		};
+		                                 $scope.get_board_view = function(){
+			                                 switch( $scope.meeting.board_view ) {
+				                                 case 'set_issue':
+					                                 return 'set_issue';
+					                                 break;
+			                                 }
+			                                 // If we get this far set it to be safe
+			                                 $scope.meeting.board_view = 'main_board';
+			                                 return 'main_board';
+		                                 };
+		                                 $scope.show_main_board = function(){
+			                                 return 'main_board' === $scope.get_board_view();
+		                                 };
+		                                 $scope.show_set_issue = function(){
+			                                 return 'set_issue' === $scope.get_board_view();
+		                                 };
 
-		$scope.set_main_board_view = function(){
-			$scope.meeting.board_view ='main_board';
-		};
+		                                 $scope.set_main_board_view = function(){
+			                                 $scope.meeting.board_view ='main_board';
+		                                 };
 
-        $scope.get_issue_type_icon = base_controller.get_issue_type_icon;
+		                                 $scope.get_issue_type_icon = base_controller.get_issue_type_icon;
 
 
 
-	}]);
+	                                 }]);
 
 })(app, options);
 
