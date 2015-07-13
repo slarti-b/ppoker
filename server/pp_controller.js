@@ -29,6 +29,7 @@ function PP_Controller(wss){
 	this.all_clients = wss.clients;
 	this._players = {};
 	this.avatars = {};
+	this.fields = false;
 	this.icons = {
 		issue_types: {
 
@@ -83,6 +84,8 @@ PP_Controller.prototype.do_connect = function(ws, data){
 	for( var id in this.avatars ){
 		this.send_avatars(id);
 	}
+	// Send fields
+	this.send_message(ws, this.fields_info_response() );
 
 	return true;
 };
@@ -105,8 +108,8 @@ PP_Controller.prototype.do_login = function(ws, data) {
 	}
 };
 
-PP_Controller.prototype.do_get_icons = function(ws, data){
-	logger.log('called do_get_icons');
+PP_Controller.prototype._get_icons = function(ws, data){
+	logger.log('called _get_icons');
 	var jira = new PP_Jira;
 	jira.get_issue_types(this._got_icons, {controller: this, ws: ws});
 	jira.get_prios(this._got_icons, {controller: this, ws: ws});
@@ -118,7 +121,7 @@ PP_Controller.prototype._got_avatars = function( args ) {
 };
 
 PP_Controller.prototype.send_avatars = function(id){
-	if( this.avatars.hasOwnProperty(id) && this.avatars[id ].small && this.avatars[id ].large ) {
+	if( this.avatars.hasOwnProperty(id) && this.avatars[ id ].small && this.avatars[ id ].large ) {
 		this.broadcast( new PP_Responses.PP_SuccessResponse('add_avatar', this.avatars[id]) );
 	}
 };
@@ -139,9 +142,9 @@ PP_Controller.prototype._got_icons = function(args){
 
 PP_Controller.prototype._all_icons_fetched = function(){
 	var found_some = false;
-	if( controller.icons.issue_types ){
-		for( var id in controller.icons.issue_types ){
-			if( controller.icons.issue_types[id] ) {
+	if( this.icons.issue_types ){
+		for( var id in this.icons.issue_types ){
+			if( this.icons.issue_types[id] ) {
 				found_some = true;
 			} else {
 				return false;
@@ -149,9 +152,9 @@ PP_Controller.prototype._all_icons_fetched = function(){
 			}
 		}
 	}
-	if( controller.icons.prios ){
-		for( var id in controller.icons.prios ){
-			if( controller.icons.prios[id] ) {
+	if( this.icons.prios ){
+		for( var id in this.icons.prios ){
+			if( this.icons.prios[id] ) {
 				found_some = true;
 			} else {
 				return false;
@@ -175,6 +178,8 @@ PP_Controller.prototype._get_update_icons_response = function(){
  * @private
  */
 PP_Controller.prototype._post_login = function(jira, body, args){
+	logger.log('controller._post_login');
+	logger.log_o(args, 2);
 	var ws = args.ws;
 	var controller = args.controller;
 	if( jira.is_logged_in() ){
@@ -182,7 +187,11 @@ PP_Controller.prototype._post_login = function(jira, body, args){
 		controller._players[ player.get_id() ] = player;
 		var message = player.get_login_response(null);
 		controller.send_message(ws, message);
-		controller.do_get_icons(ws, {});
+		controller._get_icons(ws, {});
+		if( false === controller.fields && settings.jira_extra_fields ) {
+			controller.fields = {};
+			jira.get_fields_info( controller._got_fields, {ws: ws, controller: controller});
+		}
 		jira.get_avatars(controller._got_avatars,  body.avatarUrls, {controller: controller, ws: ws, id: body.key});
 		return true;
 	} else {
@@ -191,6 +200,16 @@ PP_Controller.prototype._post_login = function(jira, body, args){
 	}
 };
 
+PP_Controller.prototype._got_fields = function(args, fields){
+	var ws = args.ws;
+	var controller = args.controller;
+	controller.fields = fields;
+	controller.broadcast( controller.fields_info_response() );
+};
+
+PP_Controller.prototype.fields_info_response = function(){
+	return new PP_Responses.PP_SuccessResponse('fields', this.fields );
+};
 
 PP_Controller.prototype.do_logout = function(ws, data){
 	logger.log('logging out');

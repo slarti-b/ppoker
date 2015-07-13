@@ -17,6 +17,9 @@ var logger = new PP_Logger
 var PP_Auth = require( '../helpers/pp_auth');
 var PP_Jira = require( '../helpers/pp_jira').PP_Jira;
 
+// Get config
+var settings = require( '../settings' ).settings;
+
 
 	/**
  * Class defining a meeting
@@ -154,6 +157,11 @@ PP_Meeting.prototype.set_issue_from_jira = function( player, id ) {
 	var data = {
 		fields: 'issuetype,parent,project,priority,issuelinks,status,components,description,attachment,summary,reporter,subtasks,comment'
 	};
+	if( settings.jira_extra_fields ){
+		for( var i in settings.jira_extra_fields ){
+			data.fields += ',' + settings.jira_extra_fields[ i ].id;
+		}
+	}
 	var args = {
 		player: player,
 		issue_id: id,
@@ -252,6 +260,16 @@ PP_Meeting.prototype._post_set_issue_from_jira = function(error, response, body,
 		issue.num_comments = fields.comment.total;
 	} else {
 		issue.num_comments = 0;
+	}
+
+	if( settings.jira_extra_fields ){
+		for( var i in settings.jira_extra_fields ){
+			var field = {
+				summary: settings.jira_extra_fields[ i ].summary,
+				block: settings.jira_extra_fields[ i ].block,
+				value: fields[ settings.jira_extra_fields[ i ].id ]
+			}
+		}
 	}
 	logger.log_o(issue);
 	meeting._issue = issue;

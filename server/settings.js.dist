@@ -2,12 +2,19 @@
 
 module.exports = {
 	settings: {
-		host: 'poker.example.com',
-		port: 0,
-		jira_protocol: 'https',
-		jira_domain: 'jira.example.com',
-		jira_path: '/',
-		debug: false,
-		allow_guest: false
+		host: 'poker.example.com',			// The host the websocket server should listen on
+		port: 0,							// The port the websocket server should listen on
+		jira_protocol: 'https',				// Protocol to use to connect to Jira REST API (http or https)
+		jira_domain: 'jira.example.com',	// Domain the Jira installation is running on
+		jira_path: '/',						// Path to base of Jira installation on that domain
+		debug: false,						// If true then more logging is performed
+		allow_guest: false,					// Should guest logins be allowed or not
+		jira_extra_fields:[{				// Extra fields from Jira to be displayed as part of issue details
+			 "id": "customfield_10001", 		// Jira Field ID
+			 "summary": true,					// If true then is shown in summary, if false only in details
+			 "block": false						// If true then is displayed as own block, otherwise inline with other fields
+		}],
+		jira_story_points_field: false,		// Jira field ID of the field to set story points in
+		jira_time_estimate_field: false		// Jira field ID of the field to set time estimate in
 	}
 };

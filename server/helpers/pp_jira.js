@@ -3,6 +3,7 @@
 // Get config
 var settings = require( '../settings' ).settings;
 
+// Get helpers
 var PP_Exceptions = require( './pp_exceptions');
 var PP_Logger = require( './pp_logger').PP_Logger;
 var logger = new PP_Logger;
@@ -42,7 +43,6 @@ function PP_Jira(){
         jar: true
     });
 
-	this._callback_args = false;
 	/**
 	 * Username of the logged in user
 	 * @type {string}
@@ -55,19 +55,7 @@ function PP_Jira(){
 	 * @private
 	 */
 	this._dispname = '';
-	/**
-	 * Extra callback run after built-in callbacks
-	 * Gets the current PP_Jira object and the response body as paramters
-	 * @type {function|boolean}
-	 * @private
-	 */
-	this._post_callback_callback = false;
-	/**
-	 * Marker to avoid double simultaneous request
-	 * @type {boolean}
-	 * @private
-	 */
-	this._request_in_progress = false;
+
 	/**
 	 * Message set by built-in callback
 	 * @type {string}
@@ -83,6 +71,15 @@ function PP_Jira(){
 
 }
 
+/**
+ * Checks if the request succeeded
+ * @param response
+ * @returns boolean
+ * @private
+ */
+PP_Jira.prototype._response_ok = function(response){
+	return this._get_response_code(response) && 200 == this._get_response_code(response);
+};
 /**
  * Base URL for rest api requests
  * @returns {string}
@@ -130,10 +127,6 @@ PP_Jira.prototype.get_message = function(){
 	return this._message;
 };
 
-PP_Jira.prototype.get_callback_args = function(){
-	return this._callback_args;
-}
-
 /**
  * Gets the URL for linking to a Jira issue
  *
@@ -142,6 +135,17 @@ PP_Jira.prototype.get_callback_args = function(){
 PP_Jira.prototype.get_jira_link_url = function(issue_id){
 	return this._jira_link_url && issue_id ? this._jira_link_url + issue_id : false;
 };
+
+/**
+ * Gets a link to the specified issue in Jira
+ * No check that the issue exists is performed!
+ * @param issue_id string
+ * @returns {string}
+ */
+PP_Jira.prototype.get_link_for_issue = function(issue_id){
+	return this._jira_link_url + issue_id;
+};
+
 
 /**
  * Gets the main parts of the options for a request
@@ -179,6 +183,21 @@ PP_Jira.prototype._get_request_opts = function(method, service, username, passwo
 };
 
 /**
+ * Safely gets the response code from the raw response
+ * @param response
+ * @returns {*}
+ * @private
+ */
+PP_Jira.prototype._get_response_code = function(response){
+	if( response && response instanceof Object && response.hasOwnProperty('statusCode') ) {
+		return response.statusCode;
+	} else {
+		return false;
+	}
+};
+
+
+/**
  * Internal function which runs actual request
  *
  * @param opts {} The options to pass to the request
@@ -187,25 +206,17 @@ PP_Jira.prototype._get_request_opts = function(method, service, username, passwo
  * @param args {} Extra arguments to pass to the callback
  * @private
  */
-PP_Jira.prototype._run_request = function(opts, username, callback, args){
-	// Save args for callback
-	this._callback_args = args;
+PP_Jira.prototype._run_request = function(opts, username, callback, args, post_callback_callback){
 	logger.log('running request');
 	logger.log_o(opts);
 	// Save this as a variable then wrap callback in an anonymous function in order to add the jira param
 	var jira = this;
 
-	if( this._request_in_progress ){
-		throw new PP_Exceptions.PP_Exception('Request already in progress');
-	}
-
 	// Run request
-	this._request_in_progress = true;
 	this._message = '';
 	this._request(opts, function(error, response, body){
 		logger.log('response');
-		logger.log_o(jira._get_response_code(response));
-		logger.log(response.headers);
+		logger.log('response code: ' + jira._get_response_code(response));
 		// If we have a username assume we are logging in.  In this case the authentication routine handles the response
 		// Otherwise fail if 401 returned
 		if( !username && response.statusCode === 401 ){
@@ -214,7 +225,7 @@ PP_Jira.prototype._run_request = function(opts, username, callback, args){
 		// Request complete
 		jira._request_in_progress = false;
 		// Call callback
-		callback.call(this, error, response, body, jira);
+		callback.call(this, error, response, body, jira, args, post_callback_callback);
 	});
 
 };
@@ -226,10 +237,11 @@ PP_Jira.prototype._run_request = function(opts, username, callback, args){
  * @param username string Username for authentication
  * @param password string Password for authentication
  * @param callback function Callback function to process data
- * @param args {} Extra arguments to pass to the callback
+ * @param args {} Extra arguments to pass to the callback,
+ * @param post_callback_callback Callback to be run after internal callback
  * @private
  */
-PP_Jira.prototype._get = function(service, data, callback, username, password, args) {
+PP_Jira.prototype._get = function(service, data, callback, username, password, args, post_callback_callback) {
 
 	// Options for request
 	var opts = this._get_request_opts('GET', service, username, password);
@@ -239,7 +251,7 @@ PP_Jira.prototype._get = function(service, data, callback, username, password, a
 		opts.qs = data;
 	}
 
-	this._run_request(opts, username, callback, args);
+	this._run_request(opts, username, callback, args, post_callback_callback);
 };
 
 /**
@@ -263,9 +275,26 @@ PP_Jira.prototype._post = function(service, data, callback, username, password, 
 		opts.body = data;
 	}
 
-	//logger.log_o(opts);
-
 	this._run_request(opts, username, callback, args);
+};
+
+/**
+ * Fetches binary data (e.g. images) from the specified URI
+ * @param url
+ * @param callback
+ * @param args
+ * @private
+ */
+PP_Jira.prototype._get_binary_data = function(url, callback, args, post_callback_callback, callback_args){
+	logger.log('called _get_binary_data for ' + url);
+	var jira = this;
+	var bin_req = this._request({
+		                            encoding: null,
+		                            url: url,
+		                            method: 'GET'
+	                            }, function(error, response, body){
+		callback.call(this, error, response, body, jira, args, post_callback_callback, callback_args);
+	});
 };
 
 /**
@@ -275,11 +304,11 @@ PP_Jira.prototype._post = function(service, data, callback, username, password, 
  * @param password string
  */
 PP_Jira.prototype.authenticate = function(username, password, callback, args){
-	this._post_callback_callback = callback;
+	logger.log('PP_Jira.authenticate ' + username);
 	this._username = username;
 
 	// Run request
-	this._get( 'myself', false, this._authentication_callback, username, password, args);
+	this._get( 'myself', false, this._authentication_callback, username, password, args, callback);
 };
 
 /**
@@ -294,13 +323,14 @@ PP_Jira.prototype.authenticate = function(username, password, callback, args){
  * @param jira PP_Jira the calling object
  * @private
  */
-PP_Jira.prototype._authentication_callback = function(error, response, body, jira){
+PP_Jira.prototype._authentication_callback = function(error, response, body, jira, args, callback){
+	logger.log('_authentication_callback');
 	jira._logged_in = false;
 	jira._dispname = '';
 	if( jira._get_response_code(response) ) {
 		switch( response.statusCode ){
 			case 200:
-				if( body.active ){
+			if( body.active ){
 					jira._logged_in = true;
 					jira._message = 'Login Succeeded';
 					jira._dispname = body.displayName;
@@ -321,19 +351,11 @@ PP_Jira.prototype._authentication_callback = function(error, response, body, jir
 		}
 	} else {
 		jira._message = 'Login failed (no response received)';
+		logger.log(jira.get_message());
 	}
 
-	if( typeof jira._post_callback_callback === 'function' ) {
-		jira._post_callback_callback(jira, body, jira.get_callback_args());
-		jira._post_callback_callback = false;
-	}
-};
-
-PP_Jira.prototype._get_response_code = function(response){
-	if( response && response instanceof Object && response.hasOwnProperty('statusCode') ) {
-		return response.statusCode;
-	} else {
-		return false;
+	if( typeof callback === 'function' ) {
+		callback(jira, body, args);
 	}
 };
 
@@ -349,119 +371,216 @@ PP_Jira.prototype.get_issue = function(issue_id, data, callback, args){
 	this._get('issue/' + issue_id, data, callback, false, false, args);
 };
 
-
+/**
+ * Fetches basic info on issue types (including icons)
+ * @param callback Callback function to run
+ * @param args Arguments to send forward to callbacks
+ */
 PP_Jira.prototype.get_issue_types = function(callback, args){
-	this._get('issuetype', false, this._got_issue_types, false, false, {callback: callback, args: args});
+	this._get('issuetype', false, this._got_issue_types, false, false, args, callback);
 };
 
-PP_Jira.prototype.get_prios = function(callback, args){
-	this._get('priority', false, this._got_prios, false, false, {callback: callback, args: args});
-};
-
-PP_Jira.prototype._got_issue_types = function( error, response, body, jira ){
-	if( jira._get_response_code(response) && 200 == jira._get_response_code(response) ){
-		var args = jira.get_callback_args();
+/**
+ * Callback run after fetching issue types list.  Fetches icons for each
+ * @param error
+ * @param response
+ * @param body
+ * @param jira
+ * @private
+ */
+PP_Jira.prototype._got_issue_types = function( error, response, body, jira, args, callback ){
+	if( jira._response_ok(response) ){
 		for( var i in body ){
-			args.args.controller.icons.issue_types[  body[ i ].id ] = false;
+			args.controller.icons.issue_types[  body[ i ].id ] = false;
 		}
 		for( var i in body ){
 			var bin_args = {
 				issue_id: body[ i ].id,
-				issue_name: body[ i ].name,
-				args: args
+				issue_name: body[ i ].name
 			};
-			jira.get_binary_data( body[i].iconUrl, jira._got_issue_type, bin_args);
+			jira._get_binary_data( body[i].iconUrl, jira._got_issue_type, bin_args, callback, args);
 		}
 	}
 };
 
-PP_Jira.prototype._got_prios = function( error, response, body, jira ){
-	if( jira._get_response_code(response) && 200 == jira._get_response_code(response) ){
-		var args = jira.get_callback_args();
-		for( var i in body ){
-			args.args.controller.icons.issue_types[  body[ i ].id ] = false;
-		}
-		for( var i in body ){
-			var bin_args = {
-				prio_id: body[ i ].id,
-				prio_name: body[ i ].name,
-				prio_colour: body[ i ].statusColor,
-				args: args
-			};
-			jira.get_binary_data( body[i].iconUrl, jira._got_prio, bin_args);
-		}
-	}
-};
-
-PP_Jira.prototype._got_issue_type = function( error, response, body, jira, args ){
-	if( jira._get_response_code(response) && 200 == jira._get_response_code(response) && args && args.args ) {
-		var ws = args.args.args.ws;
-		var controller = args.args.args.controller;
+/**
+ * Callback run after fetching icon for an issue type
+ * @param error
+ * @param response
+ * @param body
+ * @param jira
+ * @param args
+ * @private
+ */
+PP_Jira.prototype._got_issue_type = function( error, response, body, jira, args, callback, callback_args ){
+	logger.log('PP_Jira::_got_issue_type');
+	logger.log_o(args, 2);
+	logger.log_o(callback_args, 1);
+	if( jira._response_ok(response) ) {
+		var ws = callback_args.ws;
+		var controller = callback_args.controller;
 		controller.icons.issue_types[args.issue_id] = {
 			name: args.issue_name,
 			icon: new Buffer(body ).toString('base64'),
 			mime_type : response.headers["content-type"]
 		};
-		args.args.callback.call(this, args.args.args);
+		if( typeof callback === 'function' ){
+			callback(callback_args);
+		}
 	}
 };
 
-PP_Jira.prototype._got_prio = function( error, response, body, jira, args ){
-	if( jira._get_response_code(response) && 200 == jira._get_response_code(response) && args && args.args ) {
-		var ws = args.args.args.ws;
-		var controller = args.args.args.controller;
+/**
+ * Gets basic info on priorities, including icons
+ * @param callback Callback function to run
+ * @param args Arguments to send forward to callbacks
+ */
+PP_Jira.prototype.get_prios = function(callback, args){
+	this._get('priority', false, this._got_prios, false, false, args, callback);
+};
+
+/**
+ * Callback run after fetching prios list.  Fetches icons for each
+ * @param error
+ * @param response
+ * @param body
+ * @param jira
+ * @private
+ */
+PP_Jira.prototype._got_prios = function( error, response, body, jira, args, callback ){
+	if( jira._response_ok(response) ){
+		for( var i in body ){
+			args.controller.icons.prios[  body[ i ].id ] = false;
+		}
+		for( var i in body ){
+			var bin_args = {
+				prio_id: body[ i ].id,
+				prio_name: body[ i ].name,
+				prio_colour: body[ i ].statusColor
+			};
+			jira._get_binary_data( body[i].iconUrl, jira._got_prio, bin_args, callback, args);
+		}
+	}
+};
+
+
+/**
+ * Callback run after fetching icon for a prio
+ * @param error
+ * @param response
+ * @param body
+ * @param jira
+ * @param args
+ * @private
+ */
+PP_Jira.prototype._got_prio = function( error, response, body, jira, args, callback, callback_args ){
+	logger.log('PP_Jira::_got_prio');
+	logger.log_o(args, 2);
+	logger.log_o(callback_args, 1)
+	if( jira._response_ok(response) ) {
+		var ws = callback_args.ws;
+		var controller = callback_args.controller;
 		controller.icons.prios[args.prio_id] = {
 			name: args.prio_name,
 			colour: args.prio_colour,
 			icon: new Buffer(body ).toString('base64'),
 			mime_type : response.headers["content-type"]
 		};
-		args.args.callback.call(this, args.args.args);
+		if( typeof callback === 'function' ){
+			callback(callback_args);
+		}
 	}
 };
 
+/**
+ * Gets info (name) about extra fields
+ * @param callback
+ * @param args
+ */
+PP_Jira.prototype.get_fields_info = function( callback, args ){
+	this._get( 'field', {}, this._got_fields, false, false, args, callback );
+};
+
+/**
+ * Callback run after fetching info about fields
+ * @param error
+ * @param response
+ * @param body
+ * @param jira
+ * @param args
+ * @private
+ */
+PP_Jira.prototype._got_fields = function( error, response, body, jira, args, callback ){
+	if( jira._response_ok(response) ){
+		var all_fields = {};
+		for( var i in body ){
+			all_fields[ body[ i ].id ] = body[ i ].name;
+		}
+		var fields = {};
+		for( var i in settings.jira_extra_fields ){
+			var id = settings.jira_extra_fields[ i ].id;
+			fields[ id ] = {
+				name: all_fields[ id ],
+				summary: settings.jira_extra_fields[ i ].summary,
+				block: settings.jira_extra_fields[ i ].block
+			};
+		}
+
+		if( typeof callback === 'function' ){
+			callback(args, fields);
+		}
+	}
+};
+
+/**
+ * Gets avatars for a given user
+ * @param callback
+ * @param avatarUrls
+ * @param args
+ */
 PP_Jira.prototype.get_avatars = function(callback, avatarUrls, args){
 	var id = args.id;
-	controller.avatars[id] = {
+	args.controller.avatars[id] = {
 		small: false,
 		large: false
 	};
 
-	var bin_args = {
-		size: 'small',
-		args: args,
-		callback: callback
-	};
-	this.get_binary_data(avatarUrls['24x24'], this._got_avatar, bin_args);
-
-	bin_args.size = 'large';
-	this.get_binary_data(avatarUrls['48x48'], this._got_avatar, bin_args);
+	this._get_binary_data(avatarUrls['24x24'], this._got_avatar, { size: 'small' }, callback, args);
+	this._get_binary_data(avatarUrls['48x48'], this._got_avatar, { size: 'large' }, callback, args);
 };
 
-PP_Jira.prototype._got_avatar = function( error, response, body, jira, args ){
-	if( jira._get_response_code(response) && 200 == jira._get_response_code(response) && args && args.args ) {
-		var controller = args.args.controller;
+/**
+ * Callback run after fetching an avatar
+ * @param error
+ * @param response
+ * @param body
+ * @param jira
+ * @param args
+ * @private
+ */
+PP_Jira.prototype._got_avatar = function( error, response, body, jira, args, callback, callback_args ){
+	if( jira._response_ok(response) ) {
+		var controller = callback_args.controller;
 
-		controller.avatars[args.args.id][args.size] = {
+		controller.avatars[callback_args.id][args.size] = {
 			icon: new Buffer(body ).toString('base64'),
 			mime_type : response.headers["content-type"]
 		};
-		args.callback.call(this, args.args);
+		if( typeof callback === 'function') {
+			callback.call(this, callback_args);
+		}
 	}
 };
 
-PP_Jira.prototype.get_binary_data = function(url, callback, args){
-	logger.log('called get_binary_data for ' + url);
-	var jira = this;
-	var bin_req = this._request({
-        encoding: null,
-		url: url,
-		method: 'GET'
-    }, function(error, response, body){
-		callback.call(this, error, response, body, jira, args);
-	});
-};
 
+/**
+ * Formats strings such as descriptions which come from Jira to HTML
+ *
+ * Adds paragraphs, converts some characters to HTML entities and makes things which look like links into links
+ *
+ * @param str
+ * @returns {string}
+ */
 PP_Jira.prototype.format_string_as_html = function(str){
 	// Based on http://stackoverflow.com/a/14430759/209568
 	var ret = str
@@ -484,6 +603,7 @@ PP_Jira.prototype.format_string_as_html = function(str){
 											// if there's at least 1 non-empty character
 
 
+	// Make things which look like links into links
 	ret = Autolinker.link(ret, {
 		newWindow: true,
 		stripPrefix: false,
@@ -493,16 +613,6 @@ PP_Jira.prototype.format_string_as_html = function(str){
 	return ret;
 };
 
-
-/**
- * Gets a link to the specified issue in Jira
- * No check that the issue exists is performed!
- * @param issue_id string
- * @returns {string}
- */
-PP_Jira.prototype.get_link_for_issue = function(issue_id){
-	return this._jira_link_url + issue_id;
-};
 
 
 module.exports = {
