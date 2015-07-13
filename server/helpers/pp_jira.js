@@ -541,6 +541,7 @@ PP_Jira.prototype._got_fields = function( error, response, body, jira, args, cal
 PP_Jira.prototype.get_avatars = function(callback, avatarUrls, args){
 	var id = args.id;
 	args.controller.avatars[id] = {
+		id: id,
 		small: false,
 		large: false
 	};
