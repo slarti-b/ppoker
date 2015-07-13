@@ -217,6 +217,7 @@ PP_Jira.prototype._run_request = function(opts, username, callback, args, post_c
 	this._request(opts, function(error, response, body){
 		logger.log('response');
 		logger.log('response code: ' + jira._get_response_code(response));
+		logger.log_o(body);
 		// If we have a username assume we are logging in.  In this case the authentication routine handles the response
 		// Otherwise fail if 401 returned
 		if( !username && response.statusCode === 401 ){

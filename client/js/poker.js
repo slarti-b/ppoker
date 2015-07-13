@@ -66,6 +66,8 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 
 		jira_icons: {},
 		fields: {},
+		summary_fields: {},
+		detail_fields: {},
 		avatars: {},
 
 		/* WebSocket Handling */
@@ -161,8 +163,11 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 				$scope.meeting.host_name = data.data.host;
 				$scope.meeting.players = data.data.players;
 				$scope.meeting.issue = data.data.issue;
-				if( data.data.issue && data.data.issue.hasOwnProperty('description') ){
-					$scope.meeting.issue.description = $sce.trustAsHtml(data.data.issue.description);
+				if( data.data.issue ){
+					if( data.data.issue.hasOwnProperty('description') ){
+						$scope.meeting.issue.description = $sce.trustAsHtml(data.data.issue.description);
+					}
+					base_controller.update_issue_fields($scope);
 				}
 				$scope.meeting.show_cards = data.data.show_cards;
 				$scope.meeting.is_host = data.data.you_are_host ? true : false;
@@ -182,6 +187,36 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 				$scope.$broadcast('pp_status_updated');
 			});
 
+		},
+
+		update_issue_fields: function($scope){
+			if( $scope.meeting && $scope.meeting.issue ){
+				log_o(' base_controller.summary_fields',  base_controller.summary_fields);
+				log_o('data.data.issue.custom_fields', $scope.meeting.issue.custom_fields);
+				$scope.meeting.issue.summary_fields = {};
+				for( var k in base_controller.summary_fields ){
+					log('trying ' + k);
+					if( angular.isObject($scope.meeting.issue.custom_fields) && $scope.meeting.issue.custom_fields.hasOwnProperty(k) ){
+						$scope.meeting.issue.summary_fields[ k ] = {
+							name: base_controller.summary_fields[ k ].name,
+							block: base_controller.summary_fields[ k ].block,
+							value: $scope.meeting.issue.custom_fields[ k ]
+						};
+					}
+				}
+				log_o('$scope.meeting.issue.summary_fields', $scope.meeting.issue.summary_fields);
+				$scope.meeting.issue.detail_fields = {};
+				for( var k in base_controller.detail_fields ){
+					if( angular.isObject($scope.meeting.issue.custom_fields) && $scope.meeting.issue.custom_fields.hasOwnProperty(k) ){
+						$scope.meeting.issue.detail_fields[ k ] = {
+							name: base_controller.detail_fields[ k ].name,
+							block: base_controller.detail_fields[ k ].block,
+							value: $scope.meeting.issue.custom_fields[ k ]
+						};
+					}
+				}
+
+			}
 		},
 
 		post_login: function($scope, data){
@@ -223,9 +258,22 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 
 		set_fields: function($scope, data){
 			var controller = this;
+			log_o('set_fields', data);
 			$scope.$apply(function(){
 				controller.fields = data;
+				controller.summary_fields = {};
+				controller.detail_fields = {};
+				if( controller.fields ){
+					for( var k in controller.fields ){
+						if( controller.fields[ k ].summary ){
+							controller.summary_fields[ k ] = controller.fields[ k ];
+						} else {
+							controller.detail_fields[ k ] = controller.fields[ k ];
+						}
+					}
+				}
 				log_o('fields', controller.fields);
+				base_controller.update_issue_fields($scope);
 			});
 		},
 
@@ -270,6 +318,14 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 				}
 			}
 			return '';
+		},
+
+		get_prio_colour: function(id){
+			if( id && angular.isObject(base_controller.jira_icons) && angular.isObject(base_controller.jira_icons.prios) ){
+				if( angular.isObject(base_controller.jira_icons.prios[id]) && base_controller.jira_icons.prios[id].colour ){
+					return base_controller.jira_icons.prios[id].colour;
+				}
+			}
 		},
 
 		get_initial_status: function($scope) {
@@ -392,6 +448,15 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket']);
 		                                 };
 
 		                                 $scope.get_issue_type_icon = base_controller.get_issue_type_icon;
+		                                 $scope.get_meeting_issue_type_icon = function(){
+			                                 return base_controller.get_issue_type_icon($scope.meeting.issue.type_id);
+		                                 };
+		                                 $scope.get_meeting_issue_prio_icon = function(){
+			                                 return base_controller.get_prio_icon($scope.meeting.issue.prio_id);
+		                                 };
+		                                 $scope.get_meeting_issue_prio_colour = function(){
+			                                 return base_controller.get_prio_colour($scope.meeting.issue.prio_id);
+		                                 };
 
 
 

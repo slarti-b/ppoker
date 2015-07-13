@@ -162,6 +162,8 @@ PP_Meeting.prototype.set_issue_from_jira = function( player, id ) {
 			data.fields += ',' + settings.jira_extra_fields[ i ].id;
 		}
 	}
+	logger.log('PP_Meeting::set_issue_from_jira data');
+	logger.log_o(data);
 	var args = {
 		player: player,
 		issue_id: id,
@@ -262,11 +264,14 @@ PP_Meeting.prototype._post_set_issue_from_jira = function(error, response, body,
 	}
 
 	if( settings.jira_extra_fields ){
+		issue.custom_fields = {};
 		for( var i in settings.jira_extra_fields ){
-			var field = {
-				summary: settings.jira_extra_fields[ i ].summary,
-				block: settings.jira_extra_fields[ i ].block,
-				value: fields[ settings.jira_extra_fields[ i ].id ]
+			if( fields.hasOwnProperty(settings.jira_extra_fields[ i ].id) ) {
+				if( typeof fields[ settings.jira_extra_fields[ i ].id ] === 'object' && fields[ settings.jira_extra_fields[ i ].id ] && fields[ settings.jira_extra_fields[ i ].id ].hasOwnProperty('value') ){
+					issue.custom_fields[ settings.jira_extra_fields[ i ].id ] = fields[ settings.jira_extra_fields[ i ].id ].value;
+				} else {
+					issue.custom_fields[ settings.jira_extra_fields[ i ].id ] = fields[ settings.jira_extra_fields[ i ].id ];
+				}
 			}
 		}
 	}

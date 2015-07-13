@@ -52,7 +52,7 @@
 // - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // This is the default html and body font-size for the base rem value.
-// $rem-base: 16px;
+$rem-base: 18px;
 
 // Allows the use of rem-calc() or lower-bound() in your settings
 @import "functions";
@@ -243,12 +243,12 @@ $black       : #000000;
 // $header-text-rendering: optimizeLegibility;
 
 // We use these to control header font sizes
-// $h1-font-size: rem-calc(44);
-// $h2-font-size: rem-calc(37);
-// $h3-font-size: rem-calc(27);
-// $h4-font-size: rem-calc(23);
-// $h5-font-size: rem-calc(18);
-// $h6-font-size: 1rem;
+ $h1-font-size: rem-calc(30);
+ $h2-font-size: rem-calc(25);
+ $h3-font-size: rem-calc(21);
+ $h4-font-size: rem-calc(18);
+ $h5-font-size: rem-calc(15);
+ $h6-font-size: 1rem;
 
 // We use these to control header size reduction on small screens
 // $h1-font-reduction: rem-calc(10);

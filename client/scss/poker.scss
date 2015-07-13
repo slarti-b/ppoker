@@ -258,6 +258,24 @@ li.button{
   }
 }
 
+.issue-detail{
+  @media #{$small-only}{
+    display: none;
+  }
+}
+.custom-field{
+  display: block;
+  &.empty-field{
+    display: none;
+  }
+  @media #{$small-only}{
+    font-size: small;
+  }
+
+  .field-name:after{
+    content: ': ';
+  }
+}
 .set-issue-container{
   .button{
     @media #{$small-only}{
