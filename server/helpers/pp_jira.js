@@ -582,35 +582,45 @@ PP_Jira.prototype._got_avatar = function( error, response, body, jira, args, cal
  * @returns {string}
  */
 PP_Jira.prototype.format_string_as_html = function(str){
-	// Based on http://stackoverflow.com/a/14430759/209568
-	var ret = str
-			.replace(/\r\n?/g,'\n') // normalise linebreaks
-			.replace(/(^((?!\n)\s)+|((?!\n)\s)+$)/gm,'') // trim each line
-			.replace(/(?!\n)\s+/g,' ') // reduce multiple spaces to 2 (like in "a    b")
-			.replace(/^\n+|\n+$/g,'') // trim the whole string
-			.replace(/[<>&"']/g,function(a) { // replace these signs with encoded versions
-			         switch (a) {
-				         case '<'    : return '&lt;';
-				         case '>'    : return '&gt;';
-				         case '&'    : return '&amp;';
-				         case '"'    : return '&quot;';
-				         case '\''   : return '&apos;';
-			         }
-            })
-            .replace(/\n{2,}/g,'</p><p>') // replace 2 or more consecutive empty lines with end/start p
-			.replace(/\n/g,'<br />') // replace single newline symbols with the <br /> entity
-			.replace(/^(.+?)$/,'<p>$1</p>'); // wrap all the string into <p> tags
-											// if there's at least 1 non-empty character
+	logger.log_o('null');
+	logger.log('format_string_as_html');
+	logger.log( typeof str );
+	logger.log_o(str);
+	logger.log(str);
+	str = '' + str;
+	if( 'null' === str ) {
+		return '';
+	} else {
+		// Based on http://stackoverflow.com/a/14430759/209568
+		var ret = str
+				.replace(/\r\n?/g,'\n') // normalise linebreaks
+				.replace(/(^((?!\n)\s)+|((?!\n)\s)+$)/gm,'') // trim each line
+				.replace(/(?!\n)\s+/g,' ') // reduce multiple spaces to 2 (like in "a    b")
+				.replace(/^\n+|\n+$/g,'') // trim the whole string
+				.replace(/[<>&"']/g,function(a) { // replace these signs with encoded versions
+				         switch (a) {
+					         case '<'    : return '&lt;';
+					         case '>'    : return '&gt;';
+					         case '&'    : return '&amp;';
+					         case '"'    : return '&quot;';
+					         case '\''   : return '&apos;';
+				         }
+	            })
+	            .replace(/\n{2,}/g,'</p><p>') // replace 2 or more consecutive empty lines with end/start p
+				.replace(/\n/g,'<br />') // replace single newline symbols with the <br /> entity
+				.replace(/^(.+?)$/,'<p>$1</p>'); // wrap all the string into <p> tags
+												// if there's at least 1 non-empty character
 
 
-	// Make things which look like links into links
-	ret = Autolinker.link(ret, {
-		newWindow: true,
-		stripPrefix: false,
-		phone: false,
-		twitter: false
-	});
-	return ret;
+		// Make things which look like links into links
+		ret = Autolinker.link(ret, {
+			newWindow: true,
+			stripPrefix: false,
+			phone: false,
+			twitter: false
+		});
+		return ret;
+	}
 };
 
 

@@ -170,11 +170,10 @@ PP_Meeting.prototype.set_issue_from_jira = function( player, id ) {
 	jira.get_issue(id, data, this._post_set_issue_from_jira, args);
 };
 
-PP_Meeting.prototype._post_set_issue_from_jira = function(error, response, body, jira){
+PP_Meeting.prototype._post_set_issue_from_jira = function(error, response, body, jira, args){
 	logger.log('_post_set_issue_from_jira');
-	logger.log_o(jira.get_callback_args(), 2);
 	logger.log_o(body);
-	var args = jira.get_callback_args();
+
 	var player = args.player;
 	var meeting = args.meeting;
 	var fields = body.fields;
