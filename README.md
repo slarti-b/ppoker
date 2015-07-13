@@ -1,6 +1,8 @@
 # pPoker
 
-pPoker is an application for scrum teams to use for playing Planning Poker.  It is primarily intended for the situation where not all the team members are physically in the same location and the meeting is being conducted electronically.  It can still be used if you are all in the same location, but in that case you might be better off with old-fashioned playing cards!  It is optimised for integration to [Jira].
+pPoker is an application for scrum teams to use for playing Planning Poker.  It is primarily intended for the situation where not all the team members are physically in the same location and the meeting is being conducted electronically.  It can still be used if you are all in the same location, but in that case you might be better off with old-fashioned playing cards!  
+
+pPoker is optimised for integration to [Jira] although it can be used without Jira too.
 
 Multiple meetings can be hosted simultaneously, so multiple teams can use the app.  However, each server can integrate against only one Jira installation.
 
@@ -9,8 +11,8 @@ Multiple meetings can be hosted simultaneously, so multiple teams can use the ap
 I have found the Planning Poker structure to be useful.  In particular the fact that it forces all team members to participate in the estimation process without being influenced by others estimates.  Benefits I have found include:
 
   * Team members less experienced in that area are forced to ask questions, which forces the more experienced team members/project manager to better explain the task.  This can often lead to new approaches and/or the discovery of deficiencies in the specification earlier.
-   * Different approaches and/or assumptions are exposed, especially when people newer to the area come with very different estimates: sometimes they have missed something, sometimes they have a new and better way to solve the problem.
-   * All team members become more engaged in, and feel more ownership over, the project as they have been an active part of it earlier.
+  * Different approaches and/or assumptions are exposed, especially when people newer to the area come with very different estimates: sometimes they have missed something, sometimes they have a new and better way to solve the problem.
+  * All team members become more engaged in, and feel more ownership over, the project as they have been an active part of it earlier.
 
 I am now working in a team whose members are not all based in the same location (or even country!).  In addition, many team members are relatively new to the company.  We hold our planning/estimation meetings via video conferencing.  This works well for discussion but less well for estimation.  Trying to do estimation orally (whether in the same room or not) usually results in the same one or two people giving an estimate and everyone else agreeing with them.  Forcing go-rounds or simultaneous bids via text chat is somewhat clumsy.
 
@@ -100,7 +102,7 @@ Once that is done you can start the server by simply running (in the `server` fo
 ### Client
 In the `client/js` folder there is a file called `options.js.dist`.  This should be renamed to just `options.js`and edited:
   * the `websocket/uri` specifies the URI to the node.js server you configured above
-  * the `websocket/enqueue` is a boolean parameter.  If true the the client will enqueue any requests it cannot send and send them once the websocket connection is reestablished.  If false it will discard any such connections.
+  * the `websocket/enqueue` is a boolean parameter.  If true the the client will enqueue any requests it cannot send and send them once the websocket connection is reestablished.  If false it will discard any such requests.
   * the `debug` parameter is a boolean parameter which controls how much is written to the console while running.  In addition to the usual `true` or `false` values a special value `// @@is_dev` can be given.  This is set by the `grunt build` command to `false` (or `true` when running in development mode).
 
 You should then (in the `client` folder) run the following commands
@@ -126,5 +128,5 @@ The differences between the build and dev modes for the client are:
   * Add messaging: "Foo has left the meeting", "Bar has bid", etc.
   * Add the option to automatically show cards once everyone has bid
 
-[Jira]: http://www.jira.com
+[Jira]: https://www.atlassian.com/software/jira
 [Apache Cordova]: http://cordova.apache.org/
