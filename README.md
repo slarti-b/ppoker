@@ -1,5 +1,7 @@
 # pPoker
 
+**This app is still under development and is not ready yet**
+
 pPoker is an application for scrum teams to use for playing Planning Poker.  It is primarily intended for the situation where not all the team members are physically in the same location and the meeting is being conducted electronically.  It can still be used if you are all in the same location, but in that case you might be better off with old-fashioned playing cards!  
 
 pPoker is optimised for integration to [Jira] although it can be used without Jira too.
