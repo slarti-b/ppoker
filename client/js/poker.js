@@ -156,12 +156,19 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket', 'ngTouch', 'an
 			log_o( 'updating status', data );
 			log_o('before', $scope.meeting);
 			$scope.$apply(function(){
+				var max_num_same = 0;
+				for( var i in data.data.players ){
+					if( max_num_same < data.data.players[ i ].bid_pos ){
+						max_num_same = data.data.players[ i ].bid_pos;
+					}
+				}
 				$scope.meeting.meeting_id = data.meeting;
 				$scope.user.player_id = data.player;
 				$scope.storage.set('player_id', data.player);
 				$scope.meeting.meeting_name = data.data.meeting;
 				$scope.meeting.host_name = data.data.host;
 				$scope.meeting.players = data.data.players;
+				$scope.meeting.max_num_same = max_num_same;
 				$scope.meeting.issue = data.data.issue;
 				if( data.data.issue ){
 					if( data.data.issue.hasOwnProperty('description') ){
@@ -292,14 +299,6 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket', 'ngTouch', 'an
 				}
 			}
 			return '';
-		},
-
-		get_small_avatar: function(id){
-			return this.get_avatar(id, 'small');
-		},
-
-		get_large_avatar: function(id){
-			return this.get_avatar(id, 'large');
 		},
 
 		get_issue_type_icon: function(id){
@@ -456,6 +455,14 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket', 'ngTouch', 'an
 		                                 };
 		                                 $scope.get_meeting_issue_prio_colour = function(){
 			                                 return base_controller.get_prio_colour($scope.meeting.issue.prio_id);
+		                                 };
+
+		                                 $scope.get_small_avatar = function(id){
+			                                 return base_controller.get_avatar(id, 'small');
+		                                 };
+
+		                                 $scope.get_large_avatar = function(id){
+			                                 return base_controller.get_avatar(id, 'large');
 		                                 };
 
 

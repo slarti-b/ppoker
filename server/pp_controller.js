@@ -183,7 +183,7 @@ PP_Controller.prototype._post_login = function(jira, body, args){
 	var ws = args.ws;
 	var controller = args.controller;
 	if( jira.is_logged_in() ){
-		var player = new PP_Player( ws, PP_Auth.createGUID(), body.displayName, true );
+		var player = new PP_Player( ws, PP_Auth.createGUID(), body.displayName, true, body.key );
 		controller._players[ player.get_id() ] = player;
 		var message = player.get_login_response(null);
 		controller.send_message(ws, message);

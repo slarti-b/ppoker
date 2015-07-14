@@ -356,3 +356,62 @@ li.button{
     }
   }
 }
+
+$bid-item-size: 30px;
+$max-num-players: 19;
+.bids-made-container{
+  position: relative;
+  
+  @for $i from 0 through $max-num-players{
+	&.max-same-bid-#{$i}{
+  		height: ($i+2) * $bid-item-size;
+	}
+  }
+  @media screen and (orientation: portrait){
+	@for $i from 0 through $max-num-players{
+	  &.max-same-bid-#{$i}{
+		height: 11 * $bid-item-size;
+	  }
+	}
+  }
+
+  .item{
+	width: $bid-item-size;
+	height: $bid-item-size;
+	display: table-cell;
+	position: absolute;
+	text-align: center;
+	vertical-align: middle;
+	background: hotpink;
+	border: 1px solid black;
+
+	&.bid-pos-0{
+	  background: none;
+	  border: none;
+	}
+	@for $i from 0 through 9{
+	  &.bid-index-#{$i}{
+		left: $bid-item-size * $i;
+	  }
+	}
+	@for $i from 0 through $max-num-players{
+	  &.bid-pos-#{$i}{
+		bottom: $bid-item-size * $i;
+	  }
+	}
+	@media screen and (orientation: portrait){
+	  @for $i from 0 through 9{
+		&.bid-index-#{$i}{
+		  top: $bid-item-size * $i;
+		}
+	  }
+	  @for $i from 0 through $max-num-players{
+		&.bid-pos-#{$i}{
+		  left: $bid-item-size * $i;
+		}
+	  }
+
+	}
+
+  }
+}

@@ -9,12 +9,13 @@ var PP_Responses = require( './pp_response');
  * @param name The name of the player
  * @constructor
  */
-function PP_Player(ws, id, name, authenticated) {
+function PP_Player(ws, id, name, authenticated, userid) {
 	this._id = id;
 	this._ws = ws;
 	this._name = name;
 	this._bid = false;
 	this._authenticated = authenticated ? true : false;
+	this._userid = userid ? userid : false;
 }
 
 /**
@@ -59,6 +60,10 @@ PP_Player.prototype.get_bid = function(){
  */
 PP_Player.prototype.set_bid = function(bid){
 	this._bid = bid;
+};
+
+PP_Player.prototype.get_userid = function(){
+	return this._userid;
 };
 
 /**

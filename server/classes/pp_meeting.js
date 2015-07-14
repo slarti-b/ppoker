@@ -412,10 +412,18 @@ PP_Meeting.prototype._get_player = function(player_id) {
  */
 PP_Meeting.prototype._get_players_for_response = function(){
 	var players = [];
+	var bids = {};
+	var bid;
 	for( var player_id in this._players ) {
+		bid = '' + this._players[ player_id ].get_bid();
+		if( ! bids.hasOwnProperty(bid) ){
+			bids[bid] = 0;
+		}
 		players.push({
 			name: this._players[ player_id ].get_name(),
-			bid: this._players[ player_id ].get_bid()
+			bid: bid,
+			bid_pos: ++bids[bid],
+			userid: this._players[ player_id ].get_userid()
 		});
 	}
 	return players;
