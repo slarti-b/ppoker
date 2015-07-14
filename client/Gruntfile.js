@@ -27,6 +27,19 @@ module.exports = function(grunt) {
 			}
 		}
 	},
+	copy:{
+		main:{
+			files:[
+				{
+					expand: true,
+					mode: true,
+					timestmap: true,
+					src: ['fonts/**', 'jslib/**', 'images/**'],
+					dest: 'dist'
+				}
+			]
+		}
+	},
 	includereplace: {
 		dev: {
 			options: {
@@ -70,6 +83,10 @@ module.exports = function(grunt) {
 			files: ['<%= pkg.name %>.scss', 'scss/**/*.scss'],
 			tasks: ['sass:dev']
 		},
+		copy: {
+			files: 	['fonts/**', 'jslib/**', 'images/**'],
+			tasks: ['copy:main']
+		},
 		includereplace: {
 			files: ['html/**/*.htm*', 'js/**/*.js'],
 			tasks: ['includereplace:dev']
@@ -88,7 +105,8 @@ module.exports = function(grunt) {
 grunt.loadNpmTasks('grunt-contrib-watch');
 grunt.loadNpmTasks('grunt-sass');
 grunt.loadNpmTasks('grunt-include-replace');
-grunt.registerTask('default', ['sass:dev', 'includereplace:dev', 'watch']);
-grunt.registerTask('build', ['sass:prod', 'includereplace:prod']);
+grunt.loadNpmTasks('grunt-contrib-copy');
+grunt.registerTask('default', ['sass:dev', 'includereplace:dev', 'copy:main', 'watch']);
+grunt.registerTask('build', ['sass:prod', 'includereplace:prod', 'copy:main']);
 
 };
