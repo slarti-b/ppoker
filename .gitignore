@@ -38,6 +38,4 @@ client/js/inc/options.js
 *.css.map
 *.js.map
 *.html.map
-/client/dist/index.html
-/client/dist/poker.js
-/client/dist/poker.css
+/client/dist/**/*
