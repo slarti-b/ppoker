@@ -307,7 +307,7 @@ angular.module('angular-carousel').run(['$templateCache', function($templateCach
                         }
 
                         function getSlidesDOM() {
-                            return iElement[0].querySelectorAll('ul[rn-carousel] > li');
+                            return iElement[0].querySelectorAll('ul[rn-carousel] > li,ul[data-rn-carousel] > li');
                         }
 
                         function documentMouseUpEvent(event) {

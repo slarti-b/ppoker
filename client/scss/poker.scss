@@ -127,15 +127,40 @@ $active-button-colour: blue;
   cursor: not-allowed;
 }
 
-$card-width: 5em;
+@mixin noselect{
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+$card-width: 100px;
+$card-height: 180px;
 .card{
-  height: 8em;
+  height: $card-height;
   border: 1px solid black;
   border-radius: 3px;
   width: $card-width;
   text-align: center;
   vertical-align: middle;
   display: table-cell;
+  @include noselect;
+  position: relative;
+  .card-corner{
+	font-size: 15px;
+	position: absolute;
+  }
+  .card-top-left{
+	left: 4px;
+	top: 2px;
+  }
+  .card-bottom-right{
+	right: 4px;
+	bottom: 2px;
+	transform: rotateX(180deg) scaleX(-1);
+  }
 }
 .meeting-board{
   @include clearfix;
@@ -162,22 +187,56 @@ $card-width: 5em;
 }
 
 .bid-board {
+  @include noselect;
   .possible-bids{
     list-style-type: none;
+    margin: 0 auto;
     li{
-      display: inline-block;
-      padding: 5px;
+      padding: 20px 0;
+	  width: $card-width;
       cursor: pointer;
       .card:hover{
         background-color: orange;
       }
       &.chosen{
-
         .card{
           background: #008000 ;
         }
       }
     }
+  }
+
+  .bid-container-carousel{
+	display: none;
+	@media #{$small-only} {
+	  display: block;
+	  width: 50%;
+	  margin: 0 auto;
+	}
+	.possible-bids{
+	  li{
+		height: $card-height + 80px;
+
+	  }
+	}
+	.card {
+	  font-size: 80px;
+	}
+  }
+  .bid-container-spread{
+	.card {
+	  font-size: 50px;
+	}
+	.possible-bids{
+	  li{
+		display: inline-block;
+		padding: 5px;
+
+	  }
+	}
+	@media #{$small-only} {
+	  display: none;
+	}
   }
 }
 

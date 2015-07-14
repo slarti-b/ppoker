@@ -1,6 +1,23 @@
 <div class="bid-board" data-ng-controller="BidController as bids" data-ng-if="meeting.issue">
 	<h3>Make Bid</h3>
-	<ul class="possible-bids">
-		<li data-ng-repeat="bid in bids.possible_bids" data-ng-class="{chosen: bid.value == meeting.my_bid}" data-ng-click="bids.make_bid($event, bid.value)"><span  class="card">{{bid.text}}</span></li>
-	</ul>
+	<div class="bid-container bid-container-carousel">
+		<ul class="possible-bids" data-rn-carousel data-rn-carousel-transition="hexagon" >
+			<li data-ng-repeat="bid in bids.possible_bids" data-ng-class="{chosen: bid.value == meeting.my_bid}" data-ng-click="bids.make_bid($event, bid.value)"><span  class="card">
+				<span class="card-corner card-top-left">{{bid.text}}</span>
+				{{bid.text}}
+				<span class="card-corner card-bottom-right">{{bid.text}}</span>
+			</span></li>
+		</ul>
+	</div>
+	<div class="bid-container bid-container-spread">
+		<ul class="possible-bids">
+			<li data-ng-repeat="bid in bids.possible_bids" data-ng-class="{chosen: bid.value == meeting.my_bid}" data-ng-click="bids.make_bid($event, bid.value)">
+				<span  class="card">
+					<span class="card-corner card-top-left">{{bid.text}}</span>
+					{{bid.text}}
+					<span class="card-corner card-bottom-right">{{bid.text}}</span>
+				</span>
+			</li>
+		</ul>
+	</div>
 </div>
