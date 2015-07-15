@@ -358,33 +358,41 @@ li.button{
   }
 }
 
-$bid-item-size: 30px;
+$bid-item-size: 24px;
 $max-num-players: 19;
+$landscape-bid-gutter: 3px;
+$portrait-bid-gutter: 2px;
+$bid-border-width: 1px;
 .bids-made-container{
   position: relative;
 
   @for $i from 0 through $max-num-players{
 	&.max-same-bid-#{$i}{
-  		height: ($i+2) * $bid-item-size;
+  		height: ($i+2) * ($bid-item-size + $landscape-bid-gutter + 2*$bid-border-width);
 	}
   }
   @media screen and (orientation: portrait){
 	@for $i from 0 through $max-num-players{
 	  &.max-same-bid-#{$i}{
-		height: 11 * $bid-item-size;
+		height: 11 * ($bid-item-size + $portrait-bid-gutter + 2*$bid-border-width);
 	  }
 	}
   }
 
   .item{
-	width: $bid-item-size;
-	height: $bid-item-size;
+	width: $bid-item-size + 2*$bid-border-width;
+	height: $bid-item-size + 2*$bid-border-width;
 	display: table-cell;
 	position: absolute;
 	text-align: center;
 	vertical-align: middle;
 	background: hotpink;
-	border: 1px solid black;
+    border-collapse: separate;
+	border: $bid-border-width solid black;
+    overflow: hidden;
+    img{
+      margin-top: -2px; // Why???  It works, but why?
+    }
 
 	&.bid-pos-0{
 	  background: none;
@@ -392,23 +400,23 @@ $max-num-players: 19;
 	}
 	@for $i from 0 through 9{
 	  &.bid-index-#{$i}{
-		left: $bid-item-size * $i;
+		left: ($bid-item-size + $landscape-bid-gutter + 2*$bid-border-width) * $i;
 	  }
 	}
 	@for $i from 0 through $max-num-players{
 	  &.bid-pos-#{$i}{
-		bottom: $bid-item-size * $i;
+		bottom: ($bid-item-size + 2*$bid-border-width) * $i;
 	  }
 	}
 	@media screen and (orientation: portrait){
 	  @for $i from 0 through 9{
 		&.bid-index-#{$i}{
-		  top: $bid-item-size * $i;
+		  top: ($bid-item-size + $portrait-bid-gutter + 2*$bid-border-width) * $i;
 		}
 	  }
 	  @for $i from 0 through $max-num-players{
 		&.bid-pos-#{$i}{
-		  left: $bid-item-size * $i;
+		  left: ($bid-item-size + 2*$bid-border-width) * $i;
 		}
 	  }
 

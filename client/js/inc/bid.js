@@ -78,12 +78,10 @@
 		bid_controller.$scope = $scope;
 		this.possible_bids = bid_controller.possible_bids;
 		this.make_bid = bid_controller.make_bid;
+		this.get_bid_show_index = bid_controller.get_bid_show_index;
 		this.get_bid_classes = function(player){
 			return bid_controller.get_bid_show_index(player.bid) + ' bid-pos-'+ player.bid_pos;
-		}
-		this.max_num_same_class = function(){
-			return  'max-same-bid-' + bid_controller.$scope.meeting.max_num_same;
-		}
+		};
 	}]);
 	
 })(app, options);
