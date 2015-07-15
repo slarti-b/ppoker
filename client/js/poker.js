@@ -147,6 +147,14 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket', 'ngTouch', 'an
 			$scope.ws.$emit(action, data);
 		},
 
+		get_boolean: function(val){
+			if( val && 'false' !== ('' + val).toLowerCase() ){
+				return true;
+			} else {
+				return false;
+			}
+		},
+
 		/* Update */
 		set_settings: function( $scope, data  ) {
 			$scope.settings.allow_guest = data.allow_guest;
@@ -180,8 +188,12 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket', 'ngTouch', 'an
 				$scope.meeting.is_host = data.data.you_are_host ? true : false;
 				$scope.meeting.my_bid =  data.data.your_bid;
 				$scope.meeting.all_chosen = true;
-				for( var p in data.data.players ){
-					if( !data.data.players[p ].bid ) {
+				for( var p in $scope.meeting.players ){
+					if( false === base_controller.get_boolean( $scope.meeting.players[ p ].bid ) ){
+						$scope.meeting.players[ p ].bid = false;
+					}
+					log_o($scope.meeting.players[ p ].name, $scope.meeting.players[ p ].bid);
+					if( !$scope.meeting.players[ p ].bid ) {
 						$scope.meeting.all_chosen = false;
 						break;
 					}

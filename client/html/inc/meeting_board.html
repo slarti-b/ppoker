@@ -2,9 +2,8 @@
 	<div data-ng-show="!meeting.show_cards">
 		<h3>Current Bids</h3>
 		<div data-ng-repeat="player in meeting.players" class="player" data-ng-class="{'has-bid': player.bid}">
-			<div class="card">
-			</div>
-			<h5>{{player.name}}</h5>
+			<img class="avatar" data-ng-src="{{get_large_avatar(player.userid)}}" alt="{{player.name}}" title="{{player.name}}" data-ng-show="player.userid" />
+			<span class="guest" data-ng-show="!player.userid">{{player.name}}</span>
 		</div>
 	</div>
 	<div data-ng-show="meeting.show_cards" data-ng-controller="BidController as bids">

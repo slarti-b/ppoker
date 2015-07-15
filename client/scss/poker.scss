@@ -162,25 +162,26 @@ $card-height: 180px;
 	transform: rotateX(180deg) scaleX(-1);
   }
 }
+$player-padding: 10px;
+$player-offset: 15px;
 .meeting-board{
-  @include clearfix;
   margin-top: 10px;
   .player{
-    display: inline-block;
+    display: table-cell;
     margin: 0 5px;
-    width: $card-width;
-    float: left;
-  }
-  h5{
-    margin-top: 0;
+    width: 48px + (2*$player-padding);
+    height: 48px + (2*$player-padding);
+    overflow: hidden;
+    padding: $player-padding;
     text-align: center;
+    vertical-align: middle;
   }
+
   &.hide-cards{
     .player{
+      opacity: 0.4;
       &.has-bid{
-        .card{
-          background: #008000;
-        }
+        opacity: 1;
       }
     }
   }
@@ -361,7 +362,7 @@ $bid-item-size: 30px;
 $max-num-players: 19;
 .bids-made-container{
   position: relative;
-  
+
   @for $i from 0 through $max-num-players{
 	&.max-same-bid-#{$i}{
   		height: ($i+2) * $bid-item-size;
