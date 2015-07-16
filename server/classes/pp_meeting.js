@@ -175,109 +175,110 @@ PP_Meeting.prototype.set_issue_from_jira = function( player, id ) {
 PP_Meeting.prototype._post_set_issue_from_jira = function(error, response, body, jira, args){
 	logger.log('_post_set_issue_from_jira');
 	logger.log_o(body);
-
-	var player = args.player;
-	var meeting = args.meeting;
-	var fields = body.fields;
-	var issue = new PP_Issue( body.key,
-	                          fields.summary,
-	                          jira.format_string_as_html( fields.description ),
-	                          jira.get_link_for_issue( body.key ) );
-	issue.extended_info = true;
-	if( fields.issuetype ){
-		issue.type_name = fields.issuetype.name;
-		issue.type_id = fields.issuetype.id;
-	}
-	if( fields.parent && fields.parent.key ){
-		issue.parent_id = fields.parent.key;
-		issue.parent_name = fields.parent.fields.summary;
-		if( fields.parent.fields.issuetype ){
-			issue.parent_type = fields.parent.fields.issuetype.name;
-			issue.parent_type_icon = fields.parent.fields.issuetype.iconUrl;
+	if( body ){
+		var player = args.player;
+		var meeting = args.meeting;
+		var fields = body.fields;
+		var issue = new PP_Issue( body.key,
+		                          fields.summary,
+		                          jira.format_string_as_html( fields.description ),
+		                          jira.get_link_for_issue( body.key ) );
+		issue.extended_info = true;
+		if( fields.issuetype ){
+			issue.type_name = fields.issuetype.name;
+			issue.type_id = fields.issuetype.id;
 		}
-		issue.parent_link = jira.get_link_for_issue(issue.parent_id);
-	}
-	if( fields.project ){
-		issue.project_name = fields.project.name;
-	}
-	if( fields.priority ){
-		issue.prio_id = fields.priority.id;
-		issue.prio_name = fields.priority.name;
-	}
-	if( fields.status ){
-		issue.status_name = fields.status.name;
-		issue.status_icon = fields.status.iconUrl;
-	}
-	if( fields.reporter ){
-		issue.reporter_name = fields.reporter.displayName;
-	}
-
-	if( fields.attachment ){
-		var attachments = [];
-		for( var i in fields.attachment ){
-			attachments.push({
-                name: fields.attachment[ i ].filename,
-				url: fields.attachment[ i ].content,
-                thumbnail: fields.attachment[ i ].thumbnail
-            });
-		}
-		if( attachments.length ){
-			issue.attachments = attachments;
-		}
-	}
-
-	if( fields.issuelinks ){
-		var links = [];
-		for( var i in fields.issuelinks ){
-			var link = fields.issuelinks[ i ];
-			var link_type = false;
-			var link_data = false;
-			if( link.outwardIssue ){
-				link_type = link.type.outward;
-				link_data = link.outwardIssue;
-			} else if( link.inwardIssue ) {
-				link_type = link.type.inward;
-				link_data = link.inwardIssue;
+		if( fields.parent && fields.parent.key ){
+			issue.parent_id = fields.parent.key;
+			issue.parent_name = fields.parent.fields.summary;
+			if( fields.parent.fields.issuetype ){
+				issue.parent_type = fields.parent.fields.issuetype.name;
+				issue.parent_type_icon = fields.parent.fields.issuetype.iconUrl;
 			}
-			if( link_data ){
-				links.push({
-					type: link_type,
-					id: link_data.key,
-					url: jira.get_link_for_issue(link_data.key),
-					name: link_data.fields.summary
+			issue.parent_link = jira.get_link_for_issue(issue.parent_id);
+		}
+		if( fields.project ){
+			issue.project_name = fields.project.name;
+		}
+		if( fields.priority ){
+			issue.prio_id = fields.priority.id;
+			issue.prio_name = fields.priority.name;
+		}
+		if( fields.status ){
+			issue.status_name = fields.status.name;
+			issue.status_icon = fields.status.iconUrl;
+		}
+		if( fields.reporter ){
+			issue.reporter_name = fields.reporter.displayName;
+		}
+
+		if( fields.attachment ){
+			var attachments = [];
+			for( var i in fields.attachment ){
+				attachments.push({
+	                name: fields.attachment[ i ].filename,
+					url: fields.attachment[ i ].content,
+	                thumbnail: fields.attachment[ i ].thumbnail
 	            });
 			}
+			if( attachments.length ){
+				issue.attachments = attachments;
+			}
 		}
-		if( links.length ){
-			issue.links = links;
-		}
-	}
-	if( fields.subtasks ){
-		issue.num_subtasks = fields.subtasks.length;
-	} else {
-		issue.num_subtasks = 0;
-	}
-	if( fields.comment && fields.comment.total ){
-		issue.num_comments = fields.comment.total;
-	} else {
-		issue.num_comments = 0;
-	}
 
-	if( settings.jira_extra_fields ){
-		issue.custom_fields = {};
-		for( var i in settings.jira_extra_fields ){
-			if( fields.hasOwnProperty(settings.jira_extra_fields[ i ].id) ) {
-				if( typeof fields[ settings.jira_extra_fields[ i ].id ] === 'object' && fields[ settings.jira_extra_fields[ i ].id ] && fields[ settings.jira_extra_fields[ i ].id ].hasOwnProperty('value') ){
-					issue.custom_fields[ settings.jira_extra_fields[ i ].id ] = fields[ settings.jira_extra_fields[ i ].id ].value;
-				} else {
-					issue.custom_fields[ settings.jira_extra_fields[ i ].id ] = fields[ settings.jira_extra_fields[ i ].id ];
+		if( fields.issuelinks ){
+			var links = [];
+			for( var i in fields.issuelinks ){
+				var link = fields.issuelinks[ i ];
+				var link_type = false;
+				var link_data = false;
+				if( link.outwardIssue ){
+					link_type = link.type.outward;
+					link_data = link.outwardIssue;
+				} else if( link.inwardIssue ) {
+					link_type = link.type.inward;
+					link_data = link.inwardIssue;
+				}
+				if( link_data ){
+					links.push({
+						type: link_type,
+						id: link_data.key,
+						url: jira.get_link_for_issue(link_data.key),
+						name: link_data.fields.summary
+		            });
+				}
+			}
+			if( links.length ){
+				issue.links = links;
+			}
+		}
+		if( fields.subtasks ){
+			issue.num_subtasks = fields.subtasks.length;
+		} else {
+			issue.num_subtasks = 0;
+		}
+		if( fields.comment && fields.comment.total ){
+			issue.num_comments = fields.comment.total;
+		} else {
+			issue.num_comments = 0;
+		}
+
+		if( settings.jira_extra_fields ){
+			issue.custom_fields = {};
+			for( var i in settings.jira_extra_fields ){
+				if( fields.hasOwnProperty(settings.jira_extra_fields[ i ].id) ) {
+					if( typeof fields[ settings.jira_extra_fields[ i ].id ] === 'object' && fields[ settings.jira_extra_fields[ i ].id ] && fields[ settings.jira_extra_fields[ i ].id ].hasOwnProperty('value') ){
+						issue.custom_fields[ settings.jira_extra_fields[ i ].id ] = fields[ settings.jira_extra_fields[ i ].id ].value;
+					} else {
+						issue.custom_fields[ settings.jira_extra_fields[ i ].id ] = fields[ settings.jira_extra_fields[ i ].id ];
+					}
 				}
 			}
 		}
+		logger.log_o(issue);
+		meeting._issue = issue;
+		meeting._new_issue_set();
 	}
-	logger.log_o(issue);
-	meeting._issue = issue;
-	meeting._new_issue_set();
 
 };
 

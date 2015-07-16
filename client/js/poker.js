@@ -195,7 +195,6 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket', 'ngTouch', 'an
 					log_o($scope.meeting.players[ p ].name, $scope.meeting.players[ p ].bid);
 					if( !$scope.meeting.players[ p ].bid ) {
 						$scope.meeting.all_chosen = false;
-						break;
 					}
 				}
 				log_o('after', $scope.meeting);
