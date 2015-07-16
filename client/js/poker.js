@@ -12,7 +12,7 @@ function log_o(label, obj){
 		console && console.log && console.log(label + ': %o', obj);
 	}
 }
-var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket', 'ngTouch', 'angular-carousel']);
+var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket', 'ngTouch', 'angular-carousel', 'mm.foundation']);
 
 (function(app, options){
 

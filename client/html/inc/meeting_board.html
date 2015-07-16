@@ -4,15 +4,15 @@
 		<p class="message" data-ng-if="!meeting.all_chosen">Waiting for bids</p>
 		<p class="message important" data-ng-if="meeting.all_chosen">All players have bid</p>
 		<div data-ng-repeat="player in meeting.players" class="player" data-ng-class="{'has-bid': player.bid}">
-			<img class="avatar" data-ng-src="{{get_large_avatar(player.userid)}}" alt="{{player.name}}" title="{{player.name}}" data-ng-show="player.userid" />
-			<span class="guest" data-ng-show="!player.userid">{{player.name}}</span>
+			<img class="avatar has-tip" data-ng-src="{{get_large_avatar(player.userid)}}" alt="{{player.name}}" title="{{player.name}}" data-tooltip="{{player.name}}" data-ng-show="player.userid" aria-haspopup="true" />
+			<span class="guest has-tip" data-tooltip="{{player.name}}" data-ng-show="!player.userid" aria-haspopup="true">{{player.name}}</span>
 		</div>
 	</div>
 	<div data-ng-show="meeting.show_cards" data-ng-controller="BidController as bids">
 		<h2>Bids Made</h2>
 		<div class="bids-made-container" data-ng-class="'max-same-bid-' + meeting.max_num_same">
 			<span class="item bid-pos-0" data-ng-repeat="bid in bids.possible_bids" data-ng-class="bid.index_class">{{bid.text}}</span>
-			<span class="item" data-ng-repeat="player in meeting.players" title="{{player.name}}" data-ng-class="bids.get_bid_show_index(player.bid) + ' bid-pos-' + player.bid_pos">
+			<span class="item has-tip" data-ng-repeat="player in meeting.players" data-tooltip="{{player.name}}" data-ng-class="bids.get_bid_show_index(player.bid) + ' bid-pos-' + player.bid_pos" aria-haspopup="true">
 				<img class="avatar" data-ng-src="{{get_small_avatar(player.userid)}}" alt="{{player.name}}" title="{{player.name}}" data-ng-show="player.userid" />
 			</span>
 		</div>
