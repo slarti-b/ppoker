@@ -12,7 +12,6 @@
   font-style: normal;
 }
 
-$active-button-colour: blue;
 
 /**
 **/
@@ -201,7 +200,7 @@ $player-offset: 15px;
       }
       &.chosen{
         .card{
-          background: #008000 ;
+          background:  $primary-color;
         }
       }
     }
@@ -269,10 +268,6 @@ button, .button{
   }
   border: 1px solid;
   //padding: 6px 3px;
-  &.active{
-    color: $active-button-colour;
-    border-color: $active-button-colour;
-  }
   .text {
     margin-left: 3px;
   }
@@ -386,7 +381,7 @@ $bid-border-width: 1px;
 	position: absolute;
 	text-align: center;
 	vertical-align: middle;
-	background: hotpink;
+	background: $primary-color;
     border-collapse: separate;
 	border: $bid-border-width solid black;
     overflow: hidden;
