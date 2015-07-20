@@ -31,8 +31,8 @@ node_modules
 .idea
 
 # Settings files
-server/settings.js
-client/js/inc/options.js
+/server/settings.js
+/client/js/inc/options.js
 
 # Generated files
 *.css.map
