@@ -35,6 +35,10 @@
 
 }
 
+@mixin swipable(){
+  transition: left 2s ease;
+}
+
 // Hide until angular loaded to avoid FOUC
 .ng-cloak{
   display: none !important;
@@ -150,6 +154,9 @@ $card-height: 180px;
   .card-corner{
 	font-size: 15px;
 	position: absolute;
+    @media #{$small-only} {
+      display: none;
+    }
   }
   .card-top-left{
 	left: 4px;
@@ -165,6 +172,15 @@ $player-padding: 10px;
 $player-offset: 15px;
 .meeting-board{
   margin-top: 10px;
+  @include  swipable;
+  left: 0;
+  position: relative;
+  &.show-issue-detail{
+    background: hotpink !important;
+    left: -1000px;
+    position: fixed;
+  }
+
   .player{
     display: table-cell;
     margin: 0 5px;
@@ -313,9 +329,15 @@ li.button{
   }
 }
 
-.issue-detail{
-  @media #{$small-only}{
-    display: none;
+@media #{$small-only}{
+  .issue-detail{
+    left: 1000px;
+    position: fixed;
+    @include swipable;
+    &.show-issue-detail{
+      left: 0px;
+      position: static;
+    }
   }
 }
 .custom-field{
@@ -385,6 +407,10 @@ $bid-border-width: 1px;
     border-collapse: separate;
 	border: $bid-border-width solid black;
     overflow: hidden;
+    transition-property: left, bottom;
+    transition-duration: 5s;
+    transition-timing-function: ease;
+
     img{
       margin-top: -2px; // Why???  It works, but why?
     }
