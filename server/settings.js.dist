@@ -2,6 +2,9 @@
 
 module.exports = {
 	settings: {
+		ssl: true,							// should the server use an SSL (wss) connection
+		ssl_key: '',						// path to the SSL key file (if SSL used)
+		ssl_cert: '',						// path to the SSL cert file (if SSL used)
 		host: 'poker.example.com',			// The host the websocket server should listen on
 		port: 0,							// The port the websocket server should listen on
 		jira_protocol: 'https',				// Protocol to use to connect to Jira REST API (http or https)
