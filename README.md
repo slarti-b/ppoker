@@ -2,7 +2,7 @@
 
 **This app is still under development and is not ready yet**
 
-pPoker is an application for scrum teams to use for playing Planning Poker.  It is primarily intended for the situation where not all the team members are physically in the same location and the meeting is being conducted electronically.  It can still be used if you are all in the same location, but in that case you might be better off with old-fashioned playing cards!  
+pPoker is an application for scrum teams to use for playing Planning Poker.  It is primarily intended for the situation where not all the team members are physically in the same location and the meeting is being foo conducted electronically.  It can still be used if you are all in the same location, but in that case you might be better off with old-fashioned playing cards!  
 
 pPoker is optimised for integration to [Jira] although it can be used without Jira too.
 
@@ -27,6 +27,10 @@ This app has been designed with the following goals in mind:
   * Mimic the physical Planning Poker process fairly closely, in particular to get the benefits listed above
 
 As such, the app shows who has bid in real time without showing what they have bid until everyone has done so.  It does allow people to change their bid after the cards have been displayed as you sometimes do during the discussion decide that you were wrong.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla quam elit, dapibus nec tincidunt sit amet, bibendum ut ante. Curabitur non posuere leo. Sed fringilla elementum fringilla. Integer porta felis ut placerat tempus. Curabitur ac tempor enim. Aliquam ornare vestibulum dui, et vehicula sapien mattis in. Morbi vel bibendum neque. Integer ac mi justo. Nulla gravida erat vitae purus tristique, dapibus sagittis mi semper. Sed gravida, elit non tincidunt suscipit, libero justo porta nulla, a vulputate justo odio et augue. Morbi porta, enim vel dignissim suscipit, purus leo lobortis erat, eget lobortis velit arcu ut magna. Fusce nibh risus, hendrerit nec magna vel, accumsan tincidunt ipsum. Sed eu commodo nunc.
+
+Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Duis consequat dapibus molestie. Fusce accumsan id ante ut vehicula. Proin condimentum posuere rhoncus. Curabitur tempor neque nec blandit dignissim. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Aliquam posuere pulvinar justo ac vestibulum. Donec vel quam non purus tempor scelerisque vitae sit amet magna. Nullam nec ultrices orci. Suspendisse ullamcorper dignissim maximus. Etiam et quam vitae metus euismod mattis. Proin gravida lacus ante, et efficitur nulla euismod et. Ut sed faucibus erat, quis tincidunt dui. Nullam non nisl ligula. Aenean eget eros non nulla blandit fringilla.
 
 The app is built as a web-app although I plan to package it as a mobile app, probably using [Apache Cordova].  It should be usable on either a computer or smart phone.  Thus a developer who is on their own computer in the video meeting would probably use that computer, while a group in a conference room on a shared connection to the video meeting might each use their own phone.
 
