@@ -65,7 +65,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket', 'ngTouch', 'an
 
 	var base_controller = {
 
-		jira_icons: {},
+		jira_icons: {}, //foo
 		fields: {},
 		summary_fields: {},
 		detail_fields: {},
