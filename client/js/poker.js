@@ -19,25 +19,26 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket', 'ngTouch', 'an
 	function PP_Storage($localStorage, default_vals){
 		this._local_storage = $localStorage.$default(default_vals);
 		this._default_vals = default_vals;
+    this._foo = 'bar';
 		this._storage = {};
 		this.use_local = false;
 
 
-		this.set_storage_type= function(use_local){
-			log_o('setting local storage', use_local);
-			if( use_local ){
-				this._storage = this._local_storage;
-				this.use_local = true;
-				this.set('use_local', true);
-			}else{
-				this._storage = {};
-				this._local_storage['pp_use_local'] = false;
-				for( var k in this._default_vals ) {
-					this._storage[k] = this._default_vals[k];
-				}
-				this.use_local = false;
-			}
-		};
+    this.set_storage_type= function(use_local){
+      log_o('setting local storage', use_local);
+      if( use_local ){
+        this._storage = this._local_storage;
+        this.use_local = true;
+        this.set('use_local', true);
+      }else{
+        this._storage = {};
+        this._local_storage['pp_use_local'] = false;
+        for( var k in this._default_vals ) {
+          this._storage[k] = this._default_vals[k];
+        }
+        this.use_local = false;
+      }
+    };
 
 		this.get = function(name){
 			return this._storage['pp_' + name];
@@ -64,7 +65,7 @@ var app = angular.module("pokerApp", ['ngStorage', 'ngWebsocket', 'ngTouch', 'an
 
 	var base_controller = {
 
-		jira_icons: {},
+		jira_icons: {}, //foo
 		fields: {},
 		summary_fields: {},
 		detail_fields: {},
